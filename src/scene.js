@@ -120,7 +120,7 @@ Level.prototype.init = function ()
       // EnemyStill(rect, tileno, health, attack, hostility[, maxphase])
       switch (c) {
       case T.BABY:
-	obj = new Player(rect, 1000, 1);
+	obj = new Baby(rect, 1000, 1);
 	scene.player = obj;
 	break;
       case T.REALDOOR:

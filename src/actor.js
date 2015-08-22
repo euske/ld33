@@ -84,35 +84,37 @@ Sprite.prototype.render = function (ctx, bx, by)
 };
 
 
-// FixedSprite
-function FixedSprite(bounds, duration, tileno, maxphase)
+// Particle
+function Particle(bounds, duration, dir, tileno, maxphase)
 {
   Sprite.call(this, bounds);
   this.duration = duration;
+  this.dir = dir;
   this.tileno = tileno;
   this.maxphase = (maxphase !== undefined)? maxphase : 1;
   this.phase = 0;
 }
 
-FixedSprite.prototype = Object.create(Sprite.prototype);
+Particle.prototype = Object.create(Sprite.prototype);
 
-FixedSprite.prototype.toString = function ()
+Particle.prototype.toString = function ()
 {
-  return '<FixedSprite: '+this.tileno+': '+this.bounds+'>';
+  return '<Particle: '+this.tileno+': '+this.bounds+'>';
 };
 
-FixedSprite.prototype.update = function ()
+Particle.prototype.update = function ()
 {
   Sprite.prototype.update.call(this);
-  this.phase = (this.phase+1) % this.maxphase;
+  this.phase = Math.floor(this.scene.ticks/10) % this.maxphase;
   if (this.scene.ticks < this.ticks0+this.duration) {
-    this.bounds.y -= 1;
+    this.bounds.x += this.dir.x;
+    this.bounds.y += this.dir.y;
   } else {
     this.alive = false;
   }
 };
 
-FixedSprite.prototype.render = function (ctx, bx, by)
+Particle.prototype.render = function (ctx, bx, by)
 {
   var sprites = this.scene.game.sprites;
   var tw = this.scene.tilesize;
@@ -174,8 +176,8 @@ Actor.prototype.hit = function (attack)
 };
 
 
-// Player
-function Player(bounds, health, attack)
+// Baby
+function Baby(bounds, health, attack)
 {
   Actor.call(this, bounds, bounds.inflate(-4,-4), S.BABY, health);
   this.attack = attack;
@@ -184,19 +186,19 @@ function Player(bounds, health, attack)
   this.dir = new Vec2(+1,0);
 }
 
-Player.prototype = Object.create(Actor.prototype);
+Baby.prototype = Object.create(Actor.prototype);
 
-Player.prototype.toString = function ()
+Baby.prototype.toString = function ()
 {
-  return '<Player: '+this.bounds+' health='+this.health+'>';
+  return '<Baby: '+this.bounds+' health='+this.health+'>';
 };
 
-Player.prototype.update = function ()
+Baby.prototype.update = function ()
 {
-  this.tileno = S.BABY + this.step*2 + ((0 < this.dir.x)? 0 : +1);
+  this.tileno = S.BABY + Math.floor(this.step/4)%2*2 + ((0 < this.dir.x)? 0 : +1);
 };
 
-Player.prototype.move = function (dx, dy)
+Baby.prototype.move = function (dx, dy)
 {
   var v = new Vec2(dx*this.speed, dy*this.speed);
   var objs = this.scene.findOverlappingObjects(this, v);
@@ -214,13 +216,13 @@ Player.prototype.move = function (dx, dy)
   }
   Actor.prototype.move.call(this, v.x, v.y);
   if (dx != 0 || dy != 0) {
-    this.step = 1-this.step;
+    this.step++;
     this.dir.x = dx;
     this.dir.y = dy;
   }
 };
 
-Player.prototype.action = function (action)
+Baby.prototype.action = function (action)
 {
 };
 
@@ -254,7 +256,7 @@ Enemy.prototype.move = function (dx, dy)
 	obj.hit(this.attack);
       }
     } else {
-      if (obj instanceof Player) {
+      if (obj instanceof Baby) {
 	obj.hit(this.attack);
       }
     }
@@ -276,8 +278,7 @@ Enemy.prototype.update = function ()
 {
   var fps = this.scene.game.framerate;
   if (this.hostility == 0 && ((this.scene.ticks-this.t0) % fps) == 0) {
-    // show a particle.
-    var particle = new FixedSprite(this.bounds, fps, S.HEART, 2);
+    var particle = new Particle(this.bounds, fps, new Vec2(0,-1), S.HEART, 2);
     this.scene.addObject(particle);
   }
 };
@@ -295,7 +296,7 @@ EnemyStill.prototype = Object.create(Enemy.prototype);
 EnemyStill.prototype.update = function ()
 {
   Enemy.prototype.update.call(this);
-  this.phase = (this.phase+1) % this.maxphase;
+  this.phase = Math.floor(this.scene.ticks/10) % this.maxphase;
   this.tileno = this.basetile+this.phase;
 };
 
@@ -332,10 +333,10 @@ EnemyCleaner.prototype.update = function ()
   var v = this.dir.modify(this.speed);
   this.move(v.x, v.y);
   if (this.dir.x != 0 || this.dir.y != 0) {
-    this.step = 1-this.step;
+    this.step++;
   }
   
-  this.tileno = S.CLEANER + this.step*2 + ((0 < this.dir.x)? 0 : +1);
+  this.tileno = S.CLEANER + Math.floor(this.step/4)%2*2 + ((0 < this.dir.x)? 0 : +1);
 };
 
 function EnemyWasher(bounds, health, attack, hostility)
