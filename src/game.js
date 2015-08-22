@@ -15,8 +15,10 @@ function Game(framerate, frame, images, audios, labels)
   this.music = null;
 
   // [GAME SPECIFIC CODE]
-  this.sprites = this.images.sprites;
-  this.tiles = this.images.tiles;
+  //this.sprites = this.images.sprites;
+  this.sprites = null;
+  //this.tiles = this.images.tiles;
+  this.tiles = null;
 
   // Initialize the off-screen bitmap.
   var scale = 2;
@@ -239,7 +241,7 @@ Game.prototype.init = function (state, score)
   switch (state) {
   case 0:
     this.scene = new Title(this);
-    this.scene.init('<b>Sample Game</b><p>Made with JSCS<p>Press Enter to start.');
+    this.scene.init('<b>You Are the Baby</b><p>Press Enter to start.');
     this.scene.changed.subscribe(title_changed);
     this.music = null;
     break;

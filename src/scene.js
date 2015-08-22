@@ -44,6 +44,44 @@ Scene.prototype.mousemove = function (x, y)
 };
 
 
+//  Title
+//
+function Title(game)
+{
+  Scene.call(this, game);
+}
+
+Title.prototype = Object.create(Scene.prototype);
+
+Title.prototype.init = function (text)
+{
+  var frame = this.game.frame;
+  var e = this.game.addElement(
+    new Rectangle(frame.width/8, frame.height/4,
+		  3*frame.width/4, frame.height/2));
+  e.align = 'left';
+  e.style.padding = '10px';
+  e.style.color = 'black';
+  e.style.background = 'white';
+  e.style.border = 'solid black 2px';
+  e.innerHTML = text;
+  var changed = this.changed;
+  e.onmousedown = (function (e) { changed.signal(); });
+};
+
+Title.prototype.mousedown = function (x, y, button)
+{
+  this.changed.signal();
+};
+
+Title.prototype.action = function (action)
+{
+  if (action) {
+    this.changed.signal();
+  }
+};
+
+
 //  Level
 // 
 function Level(game)
@@ -60,6 +98,10 @@ Level.prototype.init = function ()
   this.sprites = [];
   this.colliders = [];
   this.ticks = 0;
+
+  this.tilesize = 16;
+  this.player = new Player(new Rectangle(0, 0, this.tilesize, this.tilesize));
+  this.addObject(this.player);
 };
 
 Level.prototype.update = function ()
@@ -142,40 +184,11 @@ Level.prototype.cleanObjects = function (objs)
   removeArray(objs, f);
 };
 
-
-//  Title
-//
-function Title(game)
+Level.prototype.move = function (vx, vy)
 {
-  Scene.call(this, game);
-}
-
-Title.prototype = Object.create(Scene.prototype);
-
-Title.prototype.init = function (text)
-{
-  var frame = this.game.frame;
-  var e = this.game.addElement(
-    new Rectangle(frame.width/8, frame.height/4,
-		  3*frame.width/4, frame.height/2));
-  e.align = 'left';
-  e.style.padding = '10px';
-  e.style.color = 'black';
-  e.style.background = 'white';
-  e.style.border = 'solid black 2px';
-  e.innerHTML = text;
-  var changed = this.changed;
-  e.onmousedown = (function (e) { changed.signal(); });
+  this.player.move(vx, vy);
 };
 
-Title.prototype.mousedown = function (x, y, button)
+Level.prototype.action = function (action)
 {
-  this.changed.signal();
-};
-
-Title.prototype.action = function (action)
-{
-  if (action) {
-    this.changed.signal();
-  }
 };

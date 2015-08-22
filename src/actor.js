@@ -98,12 +98,18 @@ Actor.prototype.render = function (ctx, x, y)
 {
   // [OVERRIDE]
   var sprites = this.scene.game.sprites;
-  var tw = sprites.height;
-  var w = this.bounds.width;
-  var h = this.bounds.height;
-  ctx.drawImage(sprites,
-		this.tileno*tw, tw-h, w, h,
-		x+this.bounds.x, y+this.bounds.y, w, h);
+  if (sprites !== null) {
+    var tw = sprites.height;
+    var w = this.bounds.width;
+    var h = this.bounds.height;
+    ctx.drawImage(sprites,
+		  this.tileno*tw, tw-h, w, h,
+		  x+this.bounds.x, y+this.bounds.y, w, h);
+  } else {
+    ctx.fillStyle = this.tileno;
+    ctx.fillRect(x+this.bounds.x, y+this.bounds.y,
+		 this.bounds.width, this.bounds.height);
+  }
 };
 
 Actor.prototype.move = function (dx, dy)
@@ -112,3 +118,13 @@ Actor.prototype.move = function (dx, dy)
   this.bounds = this.bounds.move(dx, dy);
   this.hitbox = this.hitbox.move(dx, dy);
 };
+
+
+// Player
+function Player(bounds, tileno)
+{
+  Actor.call(this, bounds, bounds.inflate(-4,-4), '#ff0000');
+}
+
+Player.prototype = Object.create(Actor.prototype);
+
