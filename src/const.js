@@ -48,8 +48,8 @@ S = {
 
 T = {
   NONE: 0,
-  WALL: 1,
-  DOOR: 2,
+  WALL1: 1,
+  WALL2: 2,
   WINDOW_L: 3,
   WINDOW_R: 4,
   OBSTACLE_END: 4,
