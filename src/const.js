@@ -22,6 +22,15 @@ S = {
   FRIDGE: 13,
   FRIDGE1: 13,
   FRIDGE2: 14,
+  WASHER: 15,
+  WASHER1: 15,
+  WASHER2: 16,
+  CLOCK: 17,
+  CLOCK1: 17,
+  CLOCK2: 18,
+  PHONE: 19,
+  PHONE1: 19,
+  PHONE2: 20,
 };
 
 T = {
@@ -41,6 +50,9 @@ T = {
   TABLE: 14,
   CLEANER: 15,
   FRIDGE: 16,
+  WASHER: 17,
+  CLOCK: 18,
+  PHONE: 19,
 
   // isObstacle: Blocks moving and cannot be overlapped. e.g. brick.
   isObstacle: function (c) { return (c < 0 || c == T.NONE); },

@@ -24,7 +24,7 @@ def main(argv):
     img = pygame.image.load(path)
     (width,height) = img.get_size()
     y = height-1
-    for x in xrange(0, width, 16):
+    for x in xrange(256, width, 16):
         c = img.get_at((x,y))
         if c[3] == 0:
             img.set_at((x,y), (0,0,0))

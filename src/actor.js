@@ -191,26 +191,24 @@ Enemy.prototype.hit = function (attack)
 function EnemyStill(bounds, tileno, health)
 {
   Enemy.call(this, bounds, tileno, health);
+  this.basetile = tileno;
+  this.phase = 0;
 }
 
 EnemyStill.prototype = Object.create(Enemy.prototype);
 
 EnemyStill.prototype.update = function ()
 {
-  switch (this.tileno) {
-  case S.TV1:
-    this.tileno = S.TV2;
-    break;
-  case S.TV2:
-    this.tileno = S.TV1;
-    break;
-  case S.FRIDGE1:
-    this.tileno = S.FRIDGE2;
-    break;
-  case S.FRIDGE2:
-    this.tileno = S.FRIDGE1;
+  switch (this.basetile) {
+  case S.TV:
+  case S.FRIDGE:
+  case S.WASHER:
+  case S.CLOCK:
+  case S.PHONE:
+    this.phase = 1-this.phase;
     break;
   }
+  this.tileno = this.basetile+this.phase;
 };
 
 function EnemyCleaner(bounds, health)
@@ -226,7 +224,7 @@ EnemyCleaner.prototype = Object.create(Enemy.prototype);
 EnemyCleaner.prototype.update = function ()
 {
   if (rnd(10) == 0) {
-    this.dir = this.dir.rotate(rnd(2)-1);
+    this.dir = this.dir.rotate(rnd(3)-1);
   }
   var v = this.dir.modify(this.speed);
   var objs = this.scene.findOverlappingObjects(this, v);
@@ -238,4 +236,25 @@ EnemyCleaner.prototype.update = function ()
   }
     
   this.tileno = S.CLEANER + this.step*2 + ((0 < this.dir.x)? 0 : +1);
+};
+
+function EnemyWasher(bounds, health)
+{
+  Enemy.call(this, bounds, S.WASHER, health);
+  this.phase = 0;
+}
+
+EnemyWasher.prototype = Object.create(Enemy.prototype);
+
+EnemyWasher.prototype.update = function ()
+{
+  if (rnd(3) == 0) {
+    var v = new Vec2(rnd(3)-1, rnd(3)-1);
+    var objs = this.scene.findOverlappingObjects(this, v);
+    v = this.scene.collideTile(this.hitbox, v);
+    v = this.scene.collideObject(this, v, objs);
+    Enemy.prototype.move.call(this, v.x, v.y);
+  }
+  this.phase = 1-this.phase;
+  this.tileno = S.WASHER+this.phase;
 };
