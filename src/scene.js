@@ -211,37 +211,39 @@ Level.prototype.render = function (ctx, bx, by)
   var fx = x0*tilesize-window.x;
   var fy = y0*tilesize-window.y;
 
+  // Draw the tilemap.
+  tilemap.renderFromBottomLeft(
+    ctx, this.game.tiles, 
+    function (x,y) { return tilemap.get(x,y); },
+    bx+fx, by+fy, x0, y0, x1-x0+1, y1-y0+1);
+
   // Set the drawing order.
-  var objs = [];
+  var map = [];
   for (var i = 0; i < this.sprites.length; i++) {
     var obj = this.sprites[i];
     if (obj.scene !== this) continue;
     if (obj.bounds === null) continue;
     var bounds = obj.bounds;
     if (bounds.overlap(window)) {
-      var x = Math.floor((bounds.x+bounds.width/2)/tilesize);
       var y = Math.floor((bounds.y+bounds.height/2)/tilesize);
-      var k = y;
-      if (!objs.hasOwnProperty(k)) {
-	objs[k] = [];
-      }
-      objs[k].push(obj);
+      map.push({y:y, obj:obj});
     }
   }
 
-  // Draw the tilemap.
-  tilemap.renderFromBottomLeft(
-    ctx, this.game.tiles,
-    function (x,y) { return tilemap.get(x,y); },
-    bx+fx, by+fy, x0, y0, x1-x0+1, y1-y0+1);
+  // Draw the objects.
+  map.sort(function (a,b) { return a.y-b.y; });
+  for (var i = 0; i < map.length; i++) {
+    var obj = map[i].obj;
+    obj.render(ctx, bx-window.x, by-window.y);
+  }
 
-  // Draw objects.
+  // Draw floating objects.
   for (var i = 0; i < this.sprites.length; i++) {
     var obj = this.sprites[i];
     if (obj.scene !== this) continue;
     if (obj.bounds === null) {
       obj.render(ctx, bx, by);
-    } else {
+    } else if (obj instanceof Particle) {
       obj.render(ctx, bx-window.x, by-window.y);
     }
   }

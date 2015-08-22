@@ -38,6 +38,12 @@ S = {
   COOKER1: 23,
   COOKER2: 24,
   DOOR: 25,
+  SWEAT: 26,
+  SWEAT1: 26,
+  SWEAT2: 27,
+  EXPLOSION: 28,
+  EXPLOSION1: 28,
+  EXPLOSION2: 29,
 };
 
 T = {
