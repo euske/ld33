@@ -31,6 +31,9 @@ S = {
   PHONE: 19,
   PHONE1: 19,
   PHONE2: 20,
+  HEART: 21,
+  HEART1: 22,
+  HEART2: 23,
 };
 
 T = {

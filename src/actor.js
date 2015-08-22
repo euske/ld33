@@ -84,6 +84,43 @@ Sprite.prototype.render = function (ctx, bx, by)
 };
 
 
+// FixedSprite
+function FixedSprite(bounds, duration, tileno, maxphase)
+{
+  Sprite.call(this, bounds);
+  this.duration = duration;
+  this.tileno = tileno;
+  this.maxphase = (maxphase !== undefined)? maxphase : 1;
+  this.phase = 0;
+}
+
+FixedSprite.prototype = Object.create(Sprite.prototype);
+
+FixedSprite.prototype.update = function ()
+{
+  Sprite.prototype.update.call(this);
+  this.phase = (this.phase+1) % this.maxphase;
+  if (this.scene.ticks < this.ticks0+this.duration) {
+    this.bounds.y -= 1;
+  } else {
+    this.alive = false;
+  }
+};
+
+FixedSprite.prototype.render = function (ctx, bx, by)
+{
+  var sprites = this.scene.game.sprites;
+  var tw = this.scene.tilesize;
+  var th = sprites.height;
+  var w = this.bounds.width;
+  var h = this.bounds.height;
+  var tileno = this.tileno+this.phase;
+  ctx.drawImage(sprites,
+		tileno*tw, 0, w, th,
+		bx+this.bounds.x, by+this.bounds.y+h-th, w, th);
+};
+
+
 // Actor: a character that can interact with other characters.
 function Actor(bounds, hitbox, tileno)
 {
@@ -183,15 +220,18 @@ Enemy.prototype = Object.create(Actor.prototype);
 Enemy.prototype.hit = function (attack)
 {
   this.health -= attack;
-  if (this.health <= 0) {
-    this.alive = false;
+  if (this.health == 0) {
+    // show a particle.
+    var particle = new FixedSprite(this.bounds, this.scene.game.framerate, S.HEART, 2);
+    this.scene.addObject(particle);
   }
 };
 
-function EnemyStill(bounds, tileno, health)
+function EnemyStill(bounds, tileno, health, maxphase)
 {
   Enemy.call(this, bounds, tileno, health);
   this.basetile = tileno;
+  this.maxphase = (maxphase !== undefined)? maxphase : 1;
   this.phase = 0;
 }
 
@@ -199,15 +239,7 @@ EnemyStill.prototype = Object.create(Enemy.prototype);
 
 EnemyStill.prototype.update = function ()
 {
-  switch (this.basetile) {
-  case S.TV:
-  case S.FRIDGE:
-  case S.WASHER:
-  case S.CLOCK:
-  case S.PHONE:
-    this.phase = 1-this.phase;
-    break;
-  }
+  this.phase = (this.phase+1) % this.maxphase;
   this.tileno = this.basetile+this.phase;
 };
 
@@ -240,14 +272,14 @@ EnemyCleaner.prototype.update = function ()
 
 function EnemyWasher(bounds, health)
 {
-  Enemy.call(this, bounds, S.WASHER, health);
-  this.phase = 0;
+  EnemyStill.call(this, bounds, S.WASHER, health, 2);
 }
 
-EnemyWasher.prototype = Object.create(Enemy.prototype);
+EnemyWasher.prototype = Object.create(EnemyStill.prototype);
 
 EnemyWasher.prototype.update = function ()
 {
+  EnemyStill.prototype.update.call(this);
   if (rnd(3) == 0) {
     var v = new Vec2(rnd(3)-1, rnd(3)-1);
     var objs = this.scene.findOverlappingObjects(this, v);
@@ -255,6 +287,4 @@ EnemyWasher.prototype.update = function ()
     v = this.scene.collideObject(this, v, objs);
     Enemy.prototype.move.call(this, v.x, v.y);
   }
-  this.phase = 1-this.phase;
-  this.tileno = S.WASHER+this.phase;
 };

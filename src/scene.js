@@ -119,7 +119,7 @@ Level.prototype.init = function ()
       var obj;
       switch (c) {
       case T.TV:
-	obj = new EnemyStill(rect, S.TV, 10);
+	obj = new EnemyStill(rect, S.TV, 10, 2);
 	break;
       case T.SOFA_R:
 	obj = new EnemyStill(rect, S.SOFA_R, 20);
@@ -140,10 +140,10 @@ Level.prototype.init = function ()
 	obj = new EnemyWasher(rect, 30);
 	break;
       case T.CLOCK:
-	obj = new EnemyStill(rect, S.CLOCK, 20);
+	obj = new EnemyStill(rect, S.CLOCK, 20, 2);
 	break;
       case T.PHONE:
-	obj = new EnemyStill(rect, S.PHONE, 10);
+	obj = new EnemyStill(rect, S.PHONE, 10, 2);
 	break;
       }
       scene.addObject(obj);
