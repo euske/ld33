@@ -22,7 +22,7 @@ Enemies:
  noise level / time limit
  nap time / hunger?
 
-TODO: rice cooker, heater, fan, surveillance camera. cat, dog, fishbowl, plants, cusion
+TODO: rice cooker, heater, fan, surveillance camera. cat, dog, fishbowl, plants, cusion, door
  gamey things, noise level/health
  food
  tameable machines

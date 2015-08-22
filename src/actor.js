@@ -96,6 +96,11 @@ function FixedSprite(bounds, duration, tileno, maxphase)
 
 FixedSprite.prototype = Object.create(Sprite.prototype);
 
+FixedSprite.prototype.toString = function ()
+{
+  return '<FixedSprite: '+this.tileno+': '+this.bounds+'>';
+};
+
 FixedSprite.prototype.update = function ()
 {
   Sprite.prototype.update.call(this);
@@ -122,11 +127,12 @@ FixedSprite.prototype.render = function (ctx, bx, by)
 
 
 // Actor: a character that can interact with other characters.
-function Actor(bounds, hitbox, tileno)
+function Actor(bounds, hitbox, tileno, health)
 {
   Sprite.call(this, bounds);
   this.hitbox = (hitbox === null)? hitbox : hitbox.copy();
   this.tileno = tileno;
+  this.health = health;
 }
 
 Actor.prototype = Object.create(Sprite.prototype);
@@ -158,19 +164,32 @@ Actor.prototype.move = function (dx, dy)
   this.hitbox = this.hitbox.move(dx, dy);
 };
 
+Actor.prototype.hit = function (attack)
+{
+  log("hit: "+this);
+  this.health = Math.max(0, this.health-attack);
+  if (this.health == 0) {
+    this.alive = false;
+  }
+};
+
 
 // Player
-function Player(bounds, tileno)
+function Player(bounds, health, attack)
 {
-  Actor.call(this, bounds, bounds.inflate(-4,-4), S.BABY);
-  this.health = 10;
-  this.attack = 1;
+  Actor.call(this, bounds, bounds.inflate(-4,-4), S.BABY, health);
+  this.attack = attack;
   this.speed = 2;
   this.step = 0;
   this.dir = new Vec2(+1,0);
 }
 
 Player.prototype = Object.create(Actor.prototype);
+
+Player.prototype.toString = function ()
+{
+  return '<Player: '+this.bounds+' health='+this.health+'>';
+};
 
 Player.prototype.update = function ()
 {
@@ -185,8 +204,11 @@ Player.prototype.move = function (dx, dy)
   v = this.scene.collideObject(this, v, objs);
   for (var i = 0; i < objs.length; i++) {
     var obj = objs[i];
-    if (obj instanceof Enemy) {
+    if (obj instanceof Actor) {
       obj.hit(this.attack);
+    }
+    if (obj instanceof Enemy) {
+      obj.love(this.attack);
     }
   }
   Actor.prototype.move.call(this, v.x, v.y);
@@ -199,37 +221,69 @@ Player.prototype.move = function (dx, dy)
 
 Player.prototype.action = function (action)
 {
-  if (action == 1) {
-    this.tileno = '#ffff00';
-  } else if (action == 2) {
-    this.tileno = '#00ffff';
-  } else {
-    this.tileno = '#ff0000';
-  }
 };
 
 // Enemy
-function Enemy(bounds, tileno, health)
+function Enemy(bounds, tileno, health, attack, hostility)
 {
   Actor.call(this, bounds, bounds.inflate(-4,-4), tileno, health);
-  this.health = health;
+  this.attack = attack;
+  this.hostility = hostility;
+  this.t0 = 0;
 }
 
 Enemy.prototype = Object.create(Actor.prototype);
 
-Enemy.prototype.hit = function (attack)
+Enemy.prototype.toString = function ()
 {
-  this.health -= attack;
-  if (this.health == 0) {
+  return ('<Enemy('+this.tileno+'): '+this.bounds+
+	  ' health='+this.health+' hostility='+this.hostility+'>');
+};
+
+Enemy.prototype.move = function (dx, dy)
+{
+  var v = new Vec2(dx, dy);
+  var objs = this.scene.findOverlappingObjects(this, v);
+  v = this.scene.collideTile(this.hitbox, v);
+  v = this.scene.collideObject(this, v, objs);
+  for (var i = 0; i < objs.length; i++) {
+    var obj = objs[i];
+    if (this.hostility <= 0) {
+      if (obj instanceof Enemy) {
+	obj.hit(this.attack);
+      }
+    } else {
+      if (obj instanceof Player) {
+	obj.hit(this.attack);
+      }
+    }
+  }
+  Actor.prototype.move.call(this, v.x, v.y);
+};
+
+Enemy.prototype.love = function (attack)
+{
+  if (0 < this.hostility) {
+    this.hostility = Math.max(0, this.hostility-attack);
+    if (this.hostility == 0) {
+      this.t0 = this.scene.ticks;
+    }
+  }
+};
+
+Enemy.prototype.update = function ()
+{
+  var fps = this.scene.game.framerate;
+  if (this.hostility == 0 && ((this.scene.ticks-this.t0) % fps) == 0) {
     // show a particle.
-    var particle = new FixedSprite(this.bounds, this.scene.game.framerate, S.HEART, 2);
+    var particle = new FixedSprite(this.bounds, fps, S.HEART, 2);
     this.scene.addObject(particle);
   }
 };
 
-function EnemyStill(bounds, tileno, health, maxphase)
+function EnemyStill(bounds, tileno, health, attack, hostility, maxphase)
 {
-  Enemy.call(this, bounds, tileno, health);
+  Enemy.call(this, bounds, tileno, health, attack, hostility);
   this.basetile = tileno;
   this.maxphase = (maxphase !== undefined)? maxphase : 1;
   this.phase = 0;
@@ -239,13 +293,14 @@ EnemyStill.prototype = Object.create(Enemy.prototype);
 
 EnemyStill.prototype.update = function ()
 {
+  Enemy.prototype.update.call(this);
   this.phase = (this.phase+1) % this.maxphase;
   this.tileno = this.basetile+this.phase;
 };
 
-function EnemyCleaner(bounds, health)
+function EnemyCleaner(bounds, health, attack, hostility)
 {
-  Enemy.call(this, bounds, S.CLEANER, health);
+  Enemy.call(this, bounds, S.CLEANER, health, attack, hostility);
   this.speed = 2;
   this.step = 0;
   this.dir = new Vec2(+1,0);
@@ -255,14 +310,12 @@ EnemyCleaner.prototype = Object.create(Enemy.prototype);
 
 EnemyCleaner.prototype.update = function ()
 {
+  Enemy.prototype.update.call(this);
   if (rnd(10) == 0) {
     this.dir = this.dir.rotate(rnd(3)-1);
   }
   var v = this.dir.modify(this.speed);
-  var objs = this.scene.findOverlappingObjects(this, v);
-  v = this.scene.collideTile(this.hitbox, v);
-  v = this.scene.collideObject(this, v, objs);
-  Enemy.prototype.move.call(this, v.x, v.y);
+  this.move(v.x, v.y);
   if (this.dir.x != 0 || this.dir.y != 0) {
     this.step = 1-this.step;
   }
@@ -270,9 +323,9 @@ EnemyCleaner.prototype.update = function ()
   this.tileno = S.CLEANER + this.step*2 + ((0 < this.dir.x)? 0 : +1);
 };
 
-function EnemyWasher(bounds, health)
+function EnemyWasher(bounds, health, attack, hostility)
 {
-  EnemyStill.call(this, bounds, S.WASHER, health, 2);
+  EnemyStill.call(this, bounds, S.WASHER, health, attack, hostility, 2);
 }
 
 EnemyWasher.prototype = Object.create(EnemyStill.prototype);

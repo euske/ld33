@@ -117,33 +117,34 @@ Level.prototype.init = function ()
     if (T.isEnemy(c)) {
       var rect = tilemap.map2coord(new Vec2(x,y));
       var obj;
+      // EnemyStill(rect, tileno, health, attack, hostility[, maxphase])
       switch (c) {
       case T.TV:
-	obj = new EnemyStill(rect, S.TV, 10, 2);
+	obj = new EnemyStill(rect, S.TV, 10, 10, 2);
 	break;
       case T.SOFA_R:
-	obj = new EnemyStill(rect, S.SOFA_R, 20);
+	obj = new EnemyStill(rect, S.SOFA_R, 20, 0, 1);
 	break;
       case T.SOFA_L:
-	obj = new EnemyStill(rect, S.SOFA_L, 20);
+	obj = new EnemyStill(rect, S.SOFA_L, 20, 0, 1);
 	break;
       case T.TABLE:
-	obj = new EnemyStill(rect, S.TABLE, 20);
+	obj = new EnemyStill(rect, S.TABLE, 20, 0, 10);
 	break;
       case T.CLEANER:
-	obj = new EnemyCleaner(rect, 20);
+	obj = new EnemyCleaner(rect, 20, 2, 10);
 	break;
       case T.FRIDGE:
-	obj = new EnemyStill(rect, S.FRIDGE, 30);
+	obj = new EnemyStill(rect, S.FRIDGE, 30, 1, 20);
 	break;
       case T.WASHER:
-	obj = new EnemyWasher(rect, 30);
+	obj = new EnemyWasher(rect, 30, 5, 20);
 	break;
       case T.CLOCK:
-	obj = new EnemyStill(rect, S.CLOCK, 20, 2);
+	obj = new EnemyStill(rect, S.CLOCK, 20, 1, 10, 2);
 	break;
       case T.PHONE:
-	obj = new EnemyStill(rect, S.PHONE, 10, 2);
+	obj = new EnemyStill(rect, S.PHONE, 10, 0, 5, 2);
 	break;
       }
       scene.addObject(obj);
@@ -153,7 +154,7 @@ Level.prototype.init = function ()
   this.tilemap.apply(null, f);
 
   var rect = new Rectangle(0, 2, 1, 1);
-  this.player = new Player(this.tilemap.map2coord(rect));
+  this.player = new Player(this.tilemap.map2coord(rect), 1000, 1);
   this.addObject(this.player);
 };
 
