@@ -195,7 +195,15 @@ Baby.prototype.toString = function ()
 
 Baby.prototype.update = function ()
 {
-  this.tileno = S.BABY + Math.floor(this.step/4)%2*2 + ((0 < this.dir.x)? 0 : +1);
+  var t = Math.floor(this.step/4)%2;
+  this.tileno = S.BABY;
+  if (this.dir.y < 0) {
+    this.tileno += 4+t;
+  } else if (0 < this.dir.y) {
+    this.tileno += 6+t;
+  } else {
+    this.tileno += t*2 + ((0 < this.dir.x)? 0 : +1);
+  }
 };
 
 Baby.prototype.move = function (dx, dy)
