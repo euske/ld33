@@ -17,11 +17,10 @@ function Game(framerate, frame, images, audios, labels)
   // [GAME SPECIFIC CODE]
   //this.sprites = this.images.sprites;
   this.sprites = null;
-  //this.tiles = this.images.tiles;
-  this.tiles = null;
+  this.tiles = this.images.tiles;
 
   // Initialize the off-screen bitmap.
-  var scale = 2;
+  var scale = 4;
   this.screen = createCanvas(this.frame.width/scale,
 			     this.frame.height/scale);
   this.ctx = getEdgeyContext(this.screen);
