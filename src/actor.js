@@ -129,6 +129,14 @@ function Player(bounds, tileno)
 
 Player.prototype = Object.create(Actor.prototype);
 
+Player.prototype.move = function (dx, dy)
+{
+  var v = new Vec2(dx*this.speed, dy*this.speed);
+  v = this.scene.collideTile(this.hitbox, v);
+  v = this.scene.collideObject(this, v);
+  Actor.prototype.move.call(this, v.x, v.y);
+}
+
 Player.prototype.action = function (action)
 {
   if (action == 1) {
@@ -139,3 +147,11 @@ Player.prototype.action = function (action)
     this.tileno = '#ff0000';
   }
 };
+
+// Enemy
+function Enemy(bounds, tileno)
+{
+  Actor.call(this, bounds, bounds.inflate(-4,-4), '#ffffff');
+}
+
+Enemy.prototype = Object.create(Actor.prototype);

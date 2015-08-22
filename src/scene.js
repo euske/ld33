@@ -87,6 +87,10 @@ Title.prototype.action = function (action)
 function Level(game)
 {
   Scene.call(this, game);
+  
+  this.tilesize = 16;
+  this.window = new Rectangle(0, 0, game.screen.width, game.screen.height);
+  this.world = new Rectangle(0, 0, game.screen.width, game.screen.height);
 }
 
 Level.prototype = Object.create(Scene.prototype);
@@ -99,14 +103,9 @@ Level.prototype.init = function ()
   this.colliders = [];
   this.ticks = 0;
 
-  var game = this.game;
-  this.tilesize = 16;
-  this.window = new Rectangle(0, 0, game.screen.width, game.screen.height);
-  this.world = new Rectangle(0, 0, game.screen.width, game.screen.height);
-  
   var map = copyArray([
     [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
-    [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
+    [0,0,0,10, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
     [0,0,1,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
     [0,0,2,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
     [0,0,0,0, 0,0,0,0, 0,0,0,0, 2,2,0,0, 0,0,0,0],
@@ -129,7 +128,22 @@ Level.prototype.init = function ()
   this.window.width = Math.min(this.world.width, this.window.width);
   this.window.height = Math.min(this.world.height, this.window.height);
     
-  this.player = new Player(new Rectangle(0, 0, this.tilesize, this.tilesize));
+  var game = this.game;
+  var scene = this;
+  var tilemap = this.tilemap;
+  var f = function (x,y) {
+    var c = tilemap.get(x,y);
+    if (T.isEnemy(c)) {
+      var rect = tilemap.map2coord(new Vec2(x,y));
+      scene.addObject(new Enemy(rect, c));
+      scene.collectibles++;
+      tilemap.set(x, y, T.NONE);
+    }
+  };
+  this.tilemap.apply(null, f);
+
+  var rect = new Rectangle(1, 1, 1, 1);
+  this.player = new Player(this.tilemap.map2coord(rect));
   this.addObject(this.player);
 };
 
@@ -222,7 +236,38 @@ Level.prototype.render = function (ctx, bx, by)
   }
 };
 
-Level.prototype.collide = function (obj0)
+Level.prototype.collideTile = function (rect, v0)
+{
+  var tilemap = this.tilemap;
+  var ts = tilemap.tilesize;
+  function f(x, y, v) {
+    if (T.isObstacle(tilemap.get(x, y))) {
+      var hitbox = new Rectangle(x*ts, y*ts, ts, ts);
+      v = rect.collide(v, hitbox);
+    }
+    return v;
+  }
+  var r = rect.move(v0.x, v0.y).union(rect);
+  return tilemap.reduce(tilemap.coord2map(r), f, v0);
+};
+
+Level.prototype.collideObject = function (obj0, v0)
+{
+  var v = v0;
+  var r = obj0.hitbox.move(v0.x, v0.y).union(obj0.hitbox);
+  if (obj0.alive && obj0.scene === this && obj0.hitbox !== null) {
+    for (var i = 0; i < this.colliders.length; i++) {
+      var obj1 = this.colliders[i];
+      if (obj1.alive && obj1.scene === this && obj1.hitbox !== null &&
+	  obj1 !== obj0 && obj1.hitbox.overlap(r)) {
+	v = obj0.hitbox.collide(v, obj1.hitbox);
+      }
+    }
+  }
+  return v;
+};
+
+Level.prototype.findOverlappingObjects = function (obj0)
 {
   var a = [];
   if (obj0.alive && obj0.scene === this && obj0.hitbox !== null) {
@@ -281,7 +326,7 @@ Level.prototype.cleanObjects = function (objs)
 
 Level.prototype.move = function (vx, vy)
 {
-  this.player.move(vx*this.player.speed, vy*this.player.speed);
+  this.player.move(vx, vy);
   var rect = this.player.bounds.inflate(this.window.width/2, this.window.height/2);
   this.setCenter(rect);
 };
