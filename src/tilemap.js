@@ -4,7 +4,7 @@
 function TileMap(tilesize, map)
 {
   this.tilesize = tilesize;
-  this.map = map;
+  this.map = copyArray(map);
   this.width = map[0].length;
   this.height = map.length;
   this.rangemap = {};
@@ -137,8 +137,8 @@ TileMap.prototype.renderFromBottomLeft =
       var c = ft(x0+dx, y0+dy);
       if (0 <= c) {
 	ctx.drawImage(tiles,
-		      tw*c, 0, tw, tw,
-		      bx+ts*dx, by+ts*dy, tw, tw);
+		      ts*c, 0, ts, tw,
+		      bx+ts*dx, by+ts*dy, ts, tw);
       }
     }
   }

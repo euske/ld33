@@ -4,27 +4,30 @@
 // It also has shared resources (images, audios, etc.)
 
 // makeSprites: make sprites/tiles from the Sheet.
-function makeSprites(sheet, ts)
+function makeSprites(sheet, tw)
 {
-  var sprites = createCanvas(ts*32, ts);
+  var th = sheet.height;
+  var sprites = createCanvas(sheet.width*2, th);
   var ctx = getEdgeyContext(sprites);
-  var n = 0;
+  var src = Math.floor(sheet.width/tw);
+  var dst = 0;
   function add(i, flip) {
     ctx.save();
     if (flip) {
-      ctx.translate((n+1)*ts, 0);
+      ctx.translate((dst+1)*tw, 0);
       ctx.scale(-1, 1);
-      ctx.drawImage(sheet, i*ts, 0, ts, ts, 0, 0, ts, ts);
+      ctx.drawImage(sheet, i*tw, 0, tw, th, 0, 0, tw, th);
     } else {
-      ctx.drawImage(sheet, i*ts, 0, ts, ts, n*ts, 0, ts, ts);
+      ctx.drawImage(sheet, i*tw, 0, tw, th, dst*tw, 0, tw, th);
     }
     ctx.restore();
-    n++;
+    dst++;
   }
-  for (var i = 0; i < 4; i++) {
-    // add flipped (left-faced) ones first.
-    add(i, true);
-    add(i+1, true);
+  for (var i = 0; i < src; i++) {
+    add(i, false);
+    if (i < 2) {
+      add(i, true);
+    }
   }
   return sprites;
 }
@@ -41,8 +44,8 @@ function Game(framerate, frame, images, audios, labels)
   this.music = null;
 
   // [GAME SPECIFIC CODE]
-  //this.sprites = this.images.sprites;
-  this.sprites = null;
+  this.tilesize = 16;
+  this.sprites = makeSprites(this.images.sprites, this.tilesize);
   this.tiles = this.images.tiles;
 
   // Initialize the off-screen bitmap.

@@ -88,7 +88,7 @@ function Level(game)
 {
   Scene.call(this, game);
   
-  this.tilesize = 16;
+  this.tilesize = game.tilesize;
   this.window = new Rectangle(0, 0, game.screen.width, game.screen.height);
   this.world = new Rectangle(0, 0, game.screen.width, game.screen.height);
 }
@@ -103,26 +103,7 @@ Level.prototype.init = function ()
   this.colliders = [];
   this.ticks = 0;
 
-  var map = copyArray([
-    [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
-    [0,0,0,10, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
-    [0,0,1,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
-    [0,0,2,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
-    [0,0,0,0, 0,0,0,0, 0,0,0,0, 2,2,0,0, 0,0,0,0],
-    
-    [0,0,0,0, 0,0,0,0, 0,0,0,0, 1,1,0,0, 0,0,0,0],
-    [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
-    [0,0,0,0, 0,0,0,0, 0,0,2,1, 0,0,0,0, 0,2,2,0],
-    [0,0,0,0, 0,0,0,0, 1,1,1,1, 0,0,0,0, 0,0,0,0],
-    [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
-    
-    [0,0,1,1, 1,1,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
-    [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0],
-    [0,0,0,0, 0,0,0,0, 1,1,0,0, 0,0,0,0, 1,1,0,0],
-    [0,0,0,0, 1,0,0,0, 0,0,2,0, 0,2,0,0, 0,0,0,0],
-    [1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1],
-  ]);
-  this.tilemap = new TileMap(this.tilesize, map);
+  this.tilemap = new TileMap(this.tilesize, Levels.LEVEL1);
   this.world.width = this.tilemap.width * this.tilesize;
   this.world.height = this.tilemap.height * this.tilesize;
   this.window.width = Math.min(this.world.width, this.window.width);
@@ -135,14 +116,14 @@ Level.prototype.init = function ()
     var c = tilemap.get(x,y);
     if (T.isEnemy(c)) {
       var rect = tilemap.map2coord(new Vec2(x,y));
-      scene.addObject(new Enemy(rect, c));
+      scene.addObject(new Enemy(rect, S.TV1));
       scene.collectibles++;
-      tilemap.set(x, y, T.NONE);
+      tilemap.set(x, y, T.FLOOR);
     }
   };
   this.tilemap.apply(null, f);
 
-  var rect = new Rectangle(1, 1, 1, 1);
+  var rect = new Rectangle(0, 2, 1, 1);
   this.player = new Player(this.tilemap.map2coord(rect));
   this.addObject(this.player);
 };
@@ -211,27 +192,19 @@ Level.prototype.render = function (ctx, bx, by)
   }
 
   // Draw the tilemap.
-  var ft = function (x,y) {
-    var k = x+','+y;
-    if (objs.hasOwnProperty(k)) {
-      var r = objs[k];
-      for (var i = 0; i < r.length; i++) {
-	var a = r[i];
-	a.render(ctx, bx-window.x, by-window.y);
-      }
-    }
-    return tilemap.get(x,y);
-  };
   tilemap.renderFromBottomLeft(
-    ctx, this.game.tiles, ft, 
+    ctx, this.game.tiles,
+    function (x,y) { return tilemap.get(x,y); },
     bx+fx, by+fy, x0, y0, x1-x0+1, y1-y0+1);
 
-  // Draw floating objects.
+  // Draw objects.
   for (var i = 0; i < this.sprites.length; i++) {
     var obj = this.sprites[i];
     if (obj.scene !== this) continue;
     if (obj.bounds === null) {
       obj.render(ctx, bx, by);
+    } else {
+      obj.render(ctx, bx-window.x, by-window.y);
     }
   }
 };

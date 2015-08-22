@@ -78,7 +78,7 @@ Sprite.prototype.update = function ()
   // [OVERRIDE]
 };
 
-Sprite.prototype.render = function (ctx, x, y)
+Sprite.prototype.render = function (ctx, bx, by)
 {
   // [OVERRIDE]
 };
@@ -94,21 +94,23 @@ function Actor(bounds, hitbox, tileno)
 
 Actor.prototype = Object.create(Sprite.prototype);
 
-Actor.prototype.render = function (ctx, x, y)
+Actor.prototype.render = function (ctx, bx, by)
 {
   // [OVERRIDE]
+  var tw = this.scene.tilesize;
   var sprites = this.scene.game.sprites;
-  if (sprites !== null) {
-    var tw = sprites.height;
+  if (sprites === null) {
+    // show a placefolder.
+    ctx.fillStyle = this.tileno;
+    ctx.fillRect(bx+this.bounds.x, by+this.bounds.y,
+		 this.bounds.width, this.bounds.height);
+  } else {
+    var th = sprites.height;
     var w = this.bounds.width;
     var h = this.bounds.height;
     ctx.drawImage(sprites,
-		  this.tileno*tw, tw-h, w, h,
-		  x+this.bounds.x, y+this.bounds.y, w, h);
-  } else {
-    ctx.fillStyle = this.tileno;
-    ctx.fillRect(x+this.bounds.x, y+this.bounds.y,
-		 this.bounds.width, this.bounds.height);
+		  this.tileno*tw, th-h, w, h,
+		  bx+this.bounds.x, by+this.bounds.y, w, h);
   }
 };
 
@@ -123,11 +125,18 @@ Actor.prototype.move = function (dx, dy)
 // Player
 function Player(bounds, tileno)
 {
-  Actor.call(this, bounds, bounds.inflate(-4,-4), '#ff0000');
+  Actor.call(this, bounds, bounds.inflate(-4,-4), S.BABY);
   this.speed = 2;
+  this.dir = +1;
+  this.step = 0;
 }
 
 Player.prototype = Object.create(Actor.prototype);
+
+Player.prototype.update = function ()
+{
+  this.tileno = S.BABY + this.step*2 + ((0 < this.dir)? 0 : +1);
+};
 
 Player.prototype.move = function (dx, dy)
 {
@@ -135,6 +144,12 @@ Player.prototype.move = function (dx, dy)
   v = this.scene.collideTile(this.hitbox, v);
   v = this.scene.collideObject(this, v);
   Actor.prototype.move.call(this, v.x, v.y);
+  if (dx != 0 || dy != 0) {
+    this.step = 1-this.step;
+  }
+  if (dx != 0) {
+    this.dir = dx;
+  }
 }
 
 Player.prototype.action = function (action)
@@ -151,7 +166,7 @@ Player.prototype.action = function (action)
 // Enemy
 function Enemy(bounds, tileno)
 {
-  Actor.call(this, bounds, bounds.inflate(-4,-4), '#ffffff');
+  Actor.call(this, bounds, bounds.inflate(-4,-4), tileno);
 }
 
 Enemy.prototype = Object.create(Actor.prototype);
