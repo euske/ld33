@@ -114,13 +114,20 @@ Level.prototype.init = function ()
   var tilemap = this.tilemap;
   var f = function (x,y) {
     var c = tilemap.get(x,y);
-    if (T.isEnemy(c)) {
+    if (T.isActor(c)) {
       var rect = tilemap.map2coord(new Vec2(x,y));
       var obj;
       // EnemyStill(rect, tileno, health, attack, hostility[, maxphase])
       switch (c) {
+      case T.BABY:
+	obj = new Player(rect, 1000, 1);
+	scene.player = obj;
+	break;
+      case T.REALDOOR:
+	obj = new EnemyStill(rect, S.DOOR, 1000, 0, -1);
+	break;
       case T.TV:
-	obj = new EnemyStill(rect, S.TV, 10, 10, 2);
+	obj = new EnemyStill(rect, S.TV, 10, 1, 10, 2);
 	break;
       case T.SOFA_R:
 	obj = new EnemyStill(rect, S.SOFA_R, 20, 0, 1);
@@ -135,7 +142,7 @@ Level.prototype.init = function ()
 	obj = new EnemyCleaner(rect, 20, 2, 10);
 	break;
       case T.FRIDGE:
-	obj = new EnemyStill(rect, S.FRIDGE, 30, 1, 20);
+	obj = new EnemyStill(rect, S.FRIDGE, 30, 1, 20, 2);
 	break;
       case T.WASHER:
 	obj = new EnemyWasher(rect, 30, 5, 20);
@@ -146,6 +153,9 @@ Level.prototype.init = function ()
       case T.PHONE:
 	obj = new EnemyStill(rect, S.PHONE, 10, 0, 5, 2);
 	break;
+      case T.COOKER:
+	obj = new EnemyStill(rect, S.COOKER, 20, 2, 1, 2);
+	break;
       }
       scene.addObject(obj);
       tilemap.set(x, y, T.CARPET);
@@ -153,9 +163,7 @@ Level.prototype.init = function ()
   };
   this.tilemap.apply(null, f);
 
-  var rect = new Rectangle(0, 2, 1, 1);
-  this.player = new Player(this.tilemap.map2coord(rect), 1000, 1);
-  this.addObject(this.player);
+  this.target = null;
 };
 
 Level.prototype.update = function ()

@@ -32,8 +32,12 @@ S = {
   PHONE1: 19,
   PHONE2: 20,
   HEART: 21,
-  HEART1: 22,
-  HEART2: 23,
+  HEART1: 21,
+  HEART2: 22,
+  COOKER: 23,
+  COOKER1: 23,
+  COOKER2: 24,
+  DOOR: 25,
 };
 
 T = {
@@ -42,11 +46,13 @@ T = {
   DOOR: 2,
   WINDOW_L: 3,
   WINDOW_R: 4,
+  OBSTACLE_END: 4,
 
   FLOOR: 5,
   CARPET: 6,
 
-  ENEMY: 10,
+  ACTOR: 10,
+  BABY: 10,
   TV: 11,
   SOFA_R: 12,
   SOFA_L: 13,
@@ -56,10 +62,12 @@ T = {
   WASHER: 17,
   CLOCK: 18,
   PHONE: 19,
-
+  COOKER: 20,
+  REALDOOR: 21,
+  
   // isObstacle: Blocks moving and cannot be overlapped. e.g. brick.
-  isObstacle: function (c) { return (c < 0 || c == T.NONE); },
-  isEnemy: function (c) { return (T.ENEMY <= c); },
+  isObstacle: function (c) { return (c < 0 || c <= T.OBSTACLE_END); },
+  isActor: function (c) { return (T.ACTOR <= c); },
   
   // isStoppable: Stops falling but can move onto it if forced. e.g. hay, ladder.
   isStoppable: function (c) { return (c < 0 || c == T.BLOCK || c == T.LADDER); },

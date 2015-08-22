@@ -209,6 +209,7 @@ Player.prototype.move = function (dx, dy)
     }
     if (obj instanceof Enemy) {
       obj.love(this.attack);
+      this.scene.target = obj;
     }
   }
   Actor.prototype.move.call(this, v.x, v.y);
@@ -312,14 +313,28 @@ EnemyCleaner.prototype.update = function ()
 {
   Enemy.prototype.update.call(this);
   if (rnd(10) == 0) {
-    this.dir = this.dir.rotate(rnd(3)-1);
+    if (this.hostility == 0) {
+      var target = this.scene.target;
+      if (target === null || target === this || !target.alive) {
+	target = this.scene.player;
+      }
+      if (rnd(2) == 0) {
+	this.dir.x = (target.hitbox.x < this.hitbox.x)? -1 : +1;
+	this.dir.y = 0;
+      } else {
+	this.dir.x = 0;
+	this.dir.y = (target.hitbox.y < this.hitbox.y)? -1 : +1;
+      }
+    } else {
+      this.dir = this.dir.rotate(rnd(3)-1);
+    }
   }
   var v = this.dir.modify(this.speed);
   this.move(v.x, v.y);
   if (this.dir.x != 0 || this.dir.y != 0) {
     this.step = 1-this.step;
   }
-    
+  
   this.tileno = S.CLEANER + this.step*2 + ((0 < this.dir.x)? 0 : +1);
 };
 
@@ -334,10 +349,18 @@ EnemyWasher.prototype.update = function ()
 {
   EnemyStill.prototype.update.call(this);
   if (rnd(3) == 0) {
-    var v = new Vec2(rnd(3)-1, rnd(3)-1);
-    var objs = this.scene.findOverlappingObjects(this, v);
-    v = this.scene.collideTile(this.hitbox, v);
-    v = this.scene.collideObject(this, v, objs);
-    Enemy.prototype.move.call(this, v.x, v.y);
+    var v = new Vec2();
+    if (this.hostility == 0) {
+      var target = this.scene.target;
+      if (target === null || target === this || !target.alive) {
+	target = this.scene.player;
+      }
+      v.x = (target.hitbox.x < this.hitbox.x)? -1 : +1;
+      v.y = (target.hitbox.y < this.hitbox.y)? -1 : +1;
+    } else {
+      v.x = rnd(3)-1;
+      v.y = rnd(3)-1;
+    }
+    this.move(v.x, v.y);
   }
 };
