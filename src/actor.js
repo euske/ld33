@@ -124,7 +124,18 @@ Actor.prototype.move = function (dx, dy)
 function Player(bounds, tileno)
 {
   Actor.call(this, bounds, bounds.inflate(-4,-4), '#ff0000');
+  this.speed = 2;
 }
 
 Player.prototype = Object.create(Actor.prototype);
 
+Player.prototype.action = function (action)
+{
+  if (action == 1) {
+    this.tileno = '#ffff00';
+  } else if (action == 2) {
+    this.tileno = '#00ffff';
+  } else {
+    this.tileno = '#ff0000';
+  }
+};

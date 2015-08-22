@@ -3,6 +3,32 @@
 // Game class handles the event loop and global state management.
 // It also has shared resources (images, audios, etc.)
 
+// makeSprites: make sprites/tiles from the Sheet.
+function makeSprites(sheet, ts)
+{
+  var sprites = createCanvas(ts*32, ts);
+  var ctx = getEdgeyContext(sprites);
+  var n = 0;
+  function add(i, flip) {
+    ctx.save();
+    if (flip) {
+      ctx.translate((n+1)*ts, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(sheet, i*ts, 0, ts, ts, 0, 0, ts, ts);
+    } else {
+      ctx.drawImage(sheet, i*ts, 0, ts, ts, n*ts, 0, ts, ts);
+    }
+    ctx.restore();
+    n++;
+  }
+  for (var i = 0; i < 4; i++) {
+    // add flipped (left-faced) ones first.
+    add(i, true);
+    add(i+1, true);
+  }
+  return sprites;
+}
+
 function Game(framerate, frame, images, audios, labels)
 {
   this.framerate = framerate;
@@ -29,7 +55,8 @@ function Game(framerate, frame, images, audios, labels)
   this._key_right = false;
   this._key_up = false;
   this._key_down = false;
-  this._key_action = false;
+  this._key_attack = false;
+  this._key_defend = false;
   this._vx = 0;
   this._vy = 0;
 }
@@ -97,14 +124,23 @@ Game.prototype.keydown = function (ev)
     this._key_down = true;
     this._vy = +1;
     break;
-  case 13:			// ENTER
+  case 17:			// CONTROL
   case 32:			// SPACE
   case 90:			// Z
-  case 88:			// X
-    if (!this._key_action) {
-      this._key_action = true;
+    if (!this._key_attack) {
+      this._key_attack = true;
       if (this.scene.action !== undefined) {
-	this.scene.action(true);
+	this.scene.action(1);
+      }
+    }
+    break;
+  case 13:			// ENTER
+  case 16:			// SHIFT
+  case 88:			// X
+    if (!this._key_defend) {
+      this._key_defend = true;
+      if (this.scene.action !== undefined) {
+	this.scene.action(2);
       }
     }
     break;
@@ -148,14 +184,23 @@ Game.prototype.keyup = function (ev)
     this._key_down = false;
     this._vy = (this._key_up) ? -1 : 0;
     break;
-  case 13:			// ENTER
+  case 17:			// CONTROL
   case 32:			// SPACE
   case 90:			// Z
-  case 88:			// X
-    if (this._key_action) {
-      this._key_action = false;
+    if (this._key_attack) {
+      this._key_attack = false;
       if (this.scene.action !== undefined) {
-	this.scene.action(false);
+	this.scene.action(0);
+      }
+    }
+    break;
+  case 13:			// ENTER
+  case 16:			// SHIFT
+  case 88:			// X
+    if (this._key_defend) {
+      this._key_defend = false;
+      if (this.scene.action !== undefined) {
+	this.scene.action(0);
       }
     }
     break;

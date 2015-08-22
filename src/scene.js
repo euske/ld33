@@ -281,11 +281,12 @@ Level.prototype.cleanObjects = function (objs)
 
 Level.prototype.move = function (vx, vy)
 {
-  this.player.move(vx, vy);
+  this.player.move(vx*this.player.speed, vy*this.player.speed);
   var rect = this.player.bounds.inflate(this.window.width/2, this.window.height/2);
   this.setCenter(rect);
 };
 
 Level.prototype.action = function (action)
 {
+  this.player.action(action);
 };
