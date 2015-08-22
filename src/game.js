@@ -288,7 +288,7 @@ Game.prototype.init = function (state, score)
   switch (state) {
   case 0:
     this.scene = new Title(this);
-    this.scene.init('<b>You Are the Baby</b><p>Press Enter to start.');
+    this.scene.init('<b>I AM THE BABY</b><p>Press Enter to start.');
     this.scene.changed.subscribe(title_changed);
     this.music = null;
     break;

@@ -23,12 +23,11 @@ def main(argv):
     path = args.pop(0)
     img = pygame.image.load(path)
     (width,height) = img.get_size()
-    for y in xrange(height):
-        for x in xrange(width):
-            c = img.get_at((x,y))
-            if c == (0,0,0):
-                c = (255,255,255)
-            img.set_at((x,y), c)
+    y = height-1
+    for x in xrange(0, width, 16):
+        c = img.get_at((x,y))
+        if c[3] == 0:
+            img.set_at((x,y), (0,0,0))
     pygame.image.save(img, output)
     return 0
 

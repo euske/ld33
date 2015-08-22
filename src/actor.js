@@ -109,8 +109,8 @@ Actor.prototype.render = function (ctx, bx, by)
     var w = this.bounds.width;
     var h = this.bounds.height;
     ctx.drawImage(sprites,
-		  this.tileno*tw, th-h, w, h,
-		  bx+this.bounds.x, by+this.bounds.y, w, h);
+		  this.tileno*tw, 0, w, th,
+		  bx+this.bounds.x, by+this.bounds.y+h-th, w, th);
   }
 };
 
@@ -170,3 +170,15 @@ function Enemy(bounds, tileno)
 }
 
 Enemy.prototype = Object.create(Actor.prototype);
+
+Enemy.prototype.update = function ()
+{
+  switch (this.tileno) {
+  case S.TV1:
+    this.tileno = S.TV2;
+    break;
+  case S.TV2:
+    this.tileno = S.TV1;
+    break;
+  }
+};

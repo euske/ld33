@@ -14,6 +14,9 @@ S = {
   BABY_D2: 7,
   TV1: 8,
   TV2: 9,
+  SOFA_R: 10,
+  SOFA_L: 11,
+  TABLE: 12,
 };
 
 T = {
@@ -27,9 +30,13 @@ T = {
   CARPET: 6,
 
   ENEMY: 10,
+  TV: 11,
+  SOFA_R: 12,
+  SOFA_L: 13,
+  TABLE: 14,
 
   // isObstacle: Blocks moving and cannot be overlapped. e.g. brick.
-  isObstacle: function (c) { return (c < 0 || c == 111); },
+  isObstacle: function (c) { return (c < 0 || c == T.NONE); },
   isEnemy: function (c) { return (T.ENEMY <= c); },
   
   // isStoppable: Stops falling but can move onto it if forced. e.g. hay, ladder.

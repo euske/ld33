@@ -116,8 +116,22 @@ Level.prototype.init = function ()
     var c = tilemap.get(x,y);
     if (T.isEnemy(c)) {
       var rect = tilemap.map2coord(new Vec2(x,y));
-      scene.addObject(new Enemy(rect, S.TV1));
-      scene.collectibles++;
+      var obj;
+      switch (c) {
+      case T.TV:
+	obj = new Enemy(rect, S.TV1);
+	break;
+      case T.SOFA_R:
+	obj = new Enemy(rect, S.SOFA_R);
+	break;
+      case T.SOFA_L:
+	obj = new Enemy(rect, S.SOFA_L);
+	break;
+      case T.TABLE:
+	obj = new Enemy(rect, S.TABLE);
+	break;
+      }
+      scene.addObject(obj);
       tilemap.set(x, y, T.FLOOR);
     }
   };
@@ -183,7 +197,7 @@ Level.prototype.render = function (ctx, bx, by)
     if (bounds.overlap(window)) {
       var x = Math.floor((bounds.x+bounds.width/2)/tilesize);
       var y = Math.floor((bounds.y+bounds.height/2)/tilesize);
-      var k = x+','+y;
+      var k = y;
       if (!objs.hasOwnProperty(k)) {
 	objs[k] = [];
       }
