@@ -182,14 +182,18 @@ Actor.prototype.hit = function (attack)
 
 
 // Baby
-function Baby(bounds, health, attack)
+function Baby(bounds, health)
 {
   Actor.call(this, bounds, bounds.inflate(-4,-4), S.BABY, health);
-  this.attack = attack;
-  this.speed = 2;
+  this.minattack = 2;
+  this.maxattack = 5;
+  this.speed_normal = 2;
+  this.speed_attack = 4;
   this.step = 0;
+  this.motion = new Vec2(0, 0);
   this.dir = new Vec2(+1,0);
   this.invuln = 0;
+  this.attacking = 0;
 }
 
 Baby.prototype = Object.create(Actor.prototype);
@@ -201,6 +205,25 @@ Baby.prototype.toString = function ()
 
 Baby.prototype.update = function ()
 {
+  if (0 < this.attacking) {
+    var prev = this.attacking;
+    this.attacking++;
+    if (!this.move(this.dir.x, this.dir.y)) {
+      this.attacking = -3;
+    }
+  } else if (this.attacking < 0) {
+    this.attacking++;
+    this.move(this.dir.x, this.dir.y);
+  } else if (this.motion.x != 0 || this.motion.y != 0) {
+    this.move(this.motion.x, this.motion.y);
+    this.dir = this.motion.copy();
+    this.step++;
+  }
+  
+  if (0 < this.invuln) {
+    this.invuln--;
+  }
+  
   var t = Math.floor(this.step/4)%2;
   this.tileno = S.BABY;
   if (this.dir.y < 0) {
@@ -209,9 +232,6 @@ Baby.prototype.update = function ()
     this.tileno += 6+t;
   } else {
     this.tileno += t*2 + ((0 < this.dir.x)? 0 : +1);
-  }
-  if (0 < this.invuln) {
-    this.invuln--;
   }
 };
 
@@ -229,30 +249,43 @@ Baby.prototype.hit = function (attack)
 
 Baby.prototype.move = function (dx, dy)
 {
-  var v = new Vec2(dx*this.speed, dy*this.speed);
+  var speed = this.speed_normal;
+  if (0 < this.attacking) {
+    speed = this.speed_attack;
+  } else if (this.attacking < 0) {
+    speed = -this.speed_attack;
+  }
+  var v = new Vec2(dx*speed, dy*speed);
   var objs = this.scene.findOverlappingObjects(this, v);
   v = this.scene.collideTile(this.hitbox, v);
   v = this.scene.collideObject(this, v, objs);
   for (var i = 0; i < objs.length; i++) {
     var obj = objs[i];
-    if (obj instanceof Actor) {
-      obj.hit(this.attack);
-    }
-    if (obj instanceof Enemy) {
-      obj.love(this.attack);
-      this.scene.target = obj;
+    if (0 < this.attacking) {
+      var attack = clamp(0, this.attacking-this.minattack, this.maxattack);
+      if (obj instanceof Actor) {
+	obj.hit(attack);
+      }
+      if (obj instanceof Enemy) {
+	this.scene.target = obj;
+      }
+    } else {
+      if (obj instanceof Enemy) {
+	obj.love(1);
+      }
     }
   }
   Actor.prototype.move.call(this, v.x, v.y);
-  if (dx != 0 || dy != 0) {
-    this.step++;
-    this.dir.x = dx;
-    this.dir.y = dy;
-  }
+  return (1 <= Math.abs(v.x) || 1 <= Math.abs(v.y));
 };
 
 Baby.prototype.action = function (action)
 {
+  if (action != 0) {
+    if (this.attacking == 0) {
+      this.attacking = 1;
+    }
+  }
 };
 
 // Enemy
@@ -359,9 +392,9 @@ EnemyCleaner.prototype.update = function ()
       this.dir = this.dir.rotate(rnd(3)-1);
     }
   }
-  var v = this.dir.modify(this.speed);
-  this.move(v.x, v.y);
   if (this.dir.x != 0 || this.dir.y != 0) {
+    var v = this.dir.modify(this.speed);
+    this.move(v.x, v.y);
     this.step++;
   }
   

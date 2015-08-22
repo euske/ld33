@@ -120,7 +120,7 @@ Level.prototype.init = function ()
       // EnemyStill(rect, tileno, health, attack, hostility[, maxphase])
       switch (c) {
       case T.BABY:
-	obj = new Baby(rect, 1000, 1);
+	obj = new Baby(rect, 1000);
 	scene.player = obj;
 	break;
       case T.REALDOOR:
@@ -173,6 +173,8 @@ Level.prototype.update = function ()
   this.cleanObjects(this.tasks);
   this.cleanObjects(this.sprites);
   this.cleanObjects(this.colliders);
+  var rect = this.player.bounds.inflate(this.window.width/2, this.window.height/2);
+  this.setCenter(rect);
   this.ticks++;
 };
 
@@ -340,9 +342,8 @@ Level.prototype.cleanObjects = function (objs)
 
 Level.prototype.move = function (vx, vy)
 {
-  this.player.move(vx, vy);
-  var rect = this.player.bounds.inflate(this.window.width/2, this.window.height/2);
-  this.setCenter(rect);
+  this.player.motion.x = vx;
+  this.player.motion.y = vy;
 };
 
 Level.prototype.action = function (action)
