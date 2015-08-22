@@ -119,20 +119,26 @@ Level.prototype.init = function ()
       var obj;
       switch (c) {
       case T.TV:
-	obj = new Enemy(rect, S.TV1);
+	obj = new EnemyStill(rect, S.TV1, 10);
 	break;
       case T.SOFA_R:
-	obj = new Enemy(rect, S.SOFA_R);
+	obj = new EnemyStill(rect, S.SOFA_R, 20);
 	break;
       case T.SOFA_L:
-	obj = new Enemy(rect, S.SOFA_L);
+	obj = new EnemyStill(rect, S.SOFA_L, 20);
 	break;
       case T.TABLE:
-	obj = new Enemy(rect, S.TABLE);
+	obj = new EnemyStill(rect, S.TABLE, 20);
+	break;
+      case T.CLEANER:
+	obj = new EnemyCleaner(rect, 20);
+	break;
+      case T.FRIDGE:
+	obj = new EnemyStill(rect, S.FRIDGE1, 30);
 	break;
       }
       scene.addObject(obj);
-      tilemap.set(x, y, T.FLOOR);
+      tilemap.set(x, y, T.CARPET);
     }
   };
   this.tilemap.apply(null, f);
@@ -238,13 +244,13 @@ Level.prototype.collideTile = function (rect, v0)
   return tilemap.reduce(tilemap.coord2map(r), f, v0);
 };
 
-Level.prototype.collideObject = function (obj0, v0)
+Level.prototype.collideObject = function (obj0, v0, objs)
 {
   var v = v0;
   var r = obj0.hitbox.move(v0.x, v0.y).union(obj0.hitbox);
   if (obj0.alive && obj0.scene === this && obj0.hitbox !== null) {
-    for (var i = 0; i < this.colliders.length; i++) {
-      var obj1 = this.colliders[i];
+    for (var i = 0; i < objs.length; i++) {
+      var obj1 = objs[i];
       if (obj1.alive && obj1.scene === this && obj1.hitbox !== null &&
 	  obj1 !== obj0 && obj1.hitbox.overlap(r)) {
 	v = obj0.hitbox.collide(v, obj1.hitbox);
@@ -254,14 +260,15 @@ Level.prototype.collideObject = function (obj0, v0)
   return v;
 };
 
-Level.prototype.findOverlappingObjects = function (obj0)
+Level.prototype.findOverlappingObjects = function (obj0, v0)
 {
   var a = [];
+  var r = obj0.hitbox.move(v0.x, v0.y).union(obj0.hitbox);
   if (obj0.alive && obj0.scene === this && obj0.hitbox !== null) {
     for (var i = 0; i < this.colliders.length; i++) {
       var obj1 = this.colliders[i];
       if (obj1.alive && obj1.scene === this && obj1.hitbox !== null &&
-	  obj1 !== obj0 && obj1.hitbox.overlap(obj0.hitbox)) {
+	  obj1 !== obj0 && obj1.hitbox.overlap(r)) {
 	a.push(obj1);
       }
     }

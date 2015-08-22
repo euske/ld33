@@ -4,13 +4,14 @@
 // It also has shared resources (images, audios, etc.)
 
 // makeSprites: make sprites/tiles from the Sheet.
-function makeSprites(sheet, tw)
+function makeSprites(sheet, tw, dict)
 {
   var th = sheet.height;
   var sprites = createCanvas(sheet.width*2, th);
   var ctx = getEdgeyContext(sprites);
   var src = Math.floor(sheet.width/tw);
   var dst = 0;
+  var map = {};
   function add(i, flip) {
     ctx.save();
     if (flip) {
@@ -19,16 +20,30 @@ function makeSprites(sheet, tw)
       ctx.drawImage(sheet, i*tw, 0, tw, th, 0, 0, tw, th);
     } else {
       ctx.drawImage(sheet, i*tw, 0, tw, th, dst*tw, 0, tw, th);
+      map[i] = dst;
     }
     ctx.restore();
     dst++;
   }
   for (var i = 0; i < src; i++) {
     add(i, false);
-    if (i < 2) {
+    switch (i) {
+    case S.BABY_R1:
+    case S.BABY_R2:
+    case S.CLEANER_R1:
+    case S.CLEANER_R2:
       add(i, true);
+      break;
     }
   }
+  for (var k in dict) {
+    var v = dict[k];
+    if (map.hasOwnProperty(v)) {
+      dict[k] = map[v];
+      //log("reassigned: "+k+": "+v+"->"+map[v]);
+    }
+  }
+  
   return sprites;
 }
 
@@ -45,7 +60,7 @@ function Game(framerate, frame, images, audios, labels)
 
   // [GAME SPECIFIC CODE]
   this.tilesize = 16;
-  this.sprites = makeSprites(this.images.sprites, this.tilesize);
+  this.sprites = makeSprites(this.images.sprites, this.tilesize, S);
   this.tiles = this.images.tiles;
 
   // Initialize the off-screen bitmap.

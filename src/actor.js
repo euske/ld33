@@ -126,31 +126,39 @@ Actor.prototype.move = function (dx, dy)
 function Player(bounds, tileno)
 {
   Actor.call(this, bounds, bounds.inflate(-4,-4), S.BABY);
+  this.health = 10;
+  this.attack = 1;
   this.speed = 2;
-  this.dir = +1;
   this.step = 0;
+  this.dir = new Vec2(+1,0);
 }
 
 Player.prototype = Object.create(Actor.prototype);
 
 Player.prototype.update = function ()
 {
-  this.tileno = S.BABY + this.step*2 + ((0 < this.dir)? 0 : +1);
+  this.tileno = S.BABY + this.step*2 + ((0 < this.dir.x)? 0 : +1);
 };
 
 Player.prototype.move = function (dx, dy)
 {
   var v = new Vec2(dx*this.speed, dy*this.speed);
+  var objs = this.scene.findOverlappingObjects(this, v);
   v = this.scene.collideTile(this.hitbox, v);
-  v = this.scene.collideObject(this, v);
+  v = this.scene.collideObject(this, v, objs);
+  for (var i = 0; i < objs.length; i++) {
+    var obj = objs[i];
+    if (obj instanceof Enemy) {
+      obj.hit(this.attack);
+    }
+  }
   Actor.prototype.move.call(this, v.x, v.y);
   if (dx != 0 || dy != 0) {
     this.step = 1-this.step;
+    this.dir.x = dx;
+    this.dir.y = dy;
   }
-  if (dx != 0) {
-    this.dir = dx;
-  }
-}
+};
 
 Player.prototype.action = function (action)
 {
@@ -164,14 +172,30 @@ Player.prototype.action = function (action)
 };
 
 // Enemy
-function Enemy(bounds, tileno)
+function Enemy(bounds, tileno, health)
 {
-  Actor.call(this, bounds, bounds.inflate(-4,-4), tileno);
+  Actor.call(this, bounds, bounds.inflate(-4,-4), tileno, health);
+  this.health = health;
 }
 
 Enemy.prototype = Object.create(Actor.prototype);
 
-Enemy.prototype.update = function ()
+Enemy.prototype.hit = function (attack)
+{
+  this.health -= attack;
+  if (this.health <= 0) {
+    this.alive = false;
+  }
+};
+
+function EnemyStill(bounds, tileno, health)
+{
+  Enemy.call(this, bounds, tileno, health);
+}
+
+EnemyStill.prototype = Object.create(Enemy.prototype);
+
+EnemyStill.prototype.update = function ()
 {
   switch (this.tileno) {
   case S.TV1:
@@ -180,5 +204,38 @@ Enemy.prototype.update = function ()
   case S.TV2:
     this.tileno = S.TV1;
     break;
+  case S.FRIDGE1:
+    this.tileno = S.FRIDGE2;
+    break;
+  case S.FRIDGE2:
+    this.tileno = S.FRIDGE1;
+    break;
   }
+};
+
+function EnemyCleaner(bounds, health)
+{
+  Enemy.call(this, bounds, S.CLEANER, health);
+  this.speed = 2;
+  this.step = 0;
+  this.dir = new Vec2(+1,0);
+}
+
+EnemyCleaner.prototype = Object.create(Enemy.prototype);
+
+EnemyCleaner.prototype.update = function ()
+{
+  if (rnd(10) == 0) {
+    this.dir = this.dir.rotate(rnd(2)-1);
+  }
+  var v = this.dir.modify(this.speed);
+  var objs = this.scene.findOverlappingObjects(this, v);
+  v = this.scene.collideTile(this.hitbox, v);
+  v = this.scene.collideObject(this, v, objs);
+  Enemy.prototype.move.call(this, v.x, v.y);
+  if (this.dir.x != 0 || this.dir.y != 0) {
+    this.step = 1-this.step;
+  }
+    
+  this.tileno = S.CLEANER + this.step*2 + ((0 < this.dir.x)? 0 : +1);
 };

@@ -14,7 +14,7 @@ Objectives:
 
 Things to destory:
  chairs/tables/lamps/dishes/bed/door
- home appliances: tv, microwave, fridge, wash machine, rice cooker, radiator, clock, fan, AC, phone.
+ home appliances: tv, vaccum clearner, microwave, fridge, wash machine, rice cooker, radiator, clock, fan, AC, phone.
  some of them are tamable.
 
 Enemies:
