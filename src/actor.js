@@ -332,8 +332,8 @@ Baby.prototype.action = function (action)
 function Enemy(bounds, tileno, health, attack, hostility)
 {
   Actor.call(this, bounds, bounds.inflate(-4,-4), tileno, health);
-  this.attack = attack;
-  this.hostility = hostility;
+  this.attack = (attack !== null)? attack : 0;
+  this.hostility = (hostility !== null)? hostility : -1;
   this.t0 = 0;
 }
 

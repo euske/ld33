@@ -19,9 +19,9 @@ S = {
   CLEANER: 11,
   CLEANER_R1: 11,
   CLEANER_R2: 12,
-  FRIDGE: 13,
-  FRIDGE1: 13,
-  FRIDGE2: 14,
+  MICROWAVE: 13,
+  MICROWAVE1: 13,
+  MICROWAVE2: 14,
   WASHER: 15,
   WASHER1: 15,
   WASHER2: 16,
@@ -46,6 +46,10 @@ S = {
   EXPLOSION2: 29,
   SHADOW: 30,
   PLANT: 31,
+  FISHBOWL: 32,
+  FISHBOWL1: 32,
+  FISHBOWL2: 33,
+  FRIDGE: 34,
 };
 
 T = {
@@ -66,13 +70,15 @@ T = {
   SOFA_L: 13,
   TABLE: 14,
   CLEANER: 15,
-  FRIDGE: 16,
+  MICROWAVE: 16,
   WASHER: 17,
   CLOCK: 18,
   PHONE: 19,
   COOKER: 20,
   REALDOOR: 21,
   PLANT: 22,
+  FISHBOWL: 23,
+  FRIDGE: 24,
   
   // isObstacle: Blocks moving and cannot be overlapped. e.g. brick.
   isObstacle: function (c) { return (c < 0 || c <= T.OBSTACLE_END); },

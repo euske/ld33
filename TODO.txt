@@ -12,18 +12,11 @@ Objectives:
   Weapons? shtick/talc powder/milk bottle/diapers
    power tools: hammer, drill, nailgun, thumb tack, sun glasses, bandana, ducky thing, fireworks, pillows and cusions
 
-Things to destory:
- chairs/tables/lamps/dishes/bed/door
- home appliances: tv, vaccum clearner, microwave, fridge, wash machine, clock, rice cooker, radiator, fan, phone.
- some of them are tamable.
-
-Enemies:
- cats/dogs/fishbowl
- noise level / time limit
- nap time / hunger?
-
-TODO: heater, fan, surveillance camera, satellite dish, closet. cat, dog, fishbowl, cusion
+TODO: fan, surveillance camera, satellite dish, fridge, closet, lamp, phone?. cat?, dog?, cusion?
  gamey things
+ fix bounding box
  milk bottle
  health bar (baby)
  time limit
+ microwave attack
+ fridge should contain milk
