@@ -45,6 +45,7 @@ S = {
   EXPLOSION1: 28,
   EXPLOSION2: 29,
   SHADOW: 30,
+  PLANT: 31,
 };
 
 T = {
@@ -71,6 +72,7 @@ T = {
   PHONE: 19,
   COOKER: 20,
   REALDOOR: 21,
+  PLANT: 22,
   
   // isObstacle: Blocks moving and cannot be overlapped. e.g. brick.
   isObstacle: function (c) { return (c < 0 || c <= T.OBSTACLE_END); },

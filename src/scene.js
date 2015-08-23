@@ -156,6 +156,9 @@ Level.prototype.init = function ()
       case T.COOKER:
 	obj = new EnemyStill(rect, S.COOKER, 20, 2, 1, 2);
 	break;
+      case T.PLANT:
+	obj = new EnemyStill(rect, S.PLANT, 10, 0, 1);
+	break;
       }
       scene.addObject(obj);
       tilemap.set(x, y, T.CARPET);
