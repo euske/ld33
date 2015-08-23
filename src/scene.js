@@ -136,7 +136,8 @@ Level.prototype.init = function ()
 	scene.door = obj;
 	break;
       case T.TV:
-	obj = new EnemyStill(rect, grow(rect,-1,-2), S.TV, 10, 0, -1, 2);
+	obj = new EnemyStill(rect, grow(rect,-1,-2), S.TV, 10);
+	obj.maxphase = 2;
 	break;
       case T.SOFA_R:
 	obj = new EnemyStill(grow(rect,0,12), grow(rect,-1,5), S.SOFA_R, 30);
@@ -151,31 +152,51 @@ Level.prototype.init = function ()
 	obj = new EnemyStill(grow(rect,0,4), grow(rect,0,1), S.TABLE2, 20);
 	break;
       case T.CLEANER:
-	obj = new EnemyCleaner(rect, rect, 20, 2, 10);
+	obj = new EnemyCleaner(rect, rect, 20);
+	obj.attack = 2;
+	obj.hostility = 10;
+	obj.sound = game.audios.cleaner;
 	break;
       case T.MICROWAVE:
-	obj = new EnemyStill(grow(rect,0,16), grow(rect,0,12), S.MICROWAVE, 30, 1, 20, 2);
+	obj = new EnemyStill(grow(rect,0,16), grow(rect,0,12), S.MICROWAVE, 30);
+	obj.attack = 1;
+	obj.hostility = 20;
+	obj.maxphase = 2;
+	obj.sound = game.audios.microwave;
 	break;
       case T.WASHER:
-	obj = new EnemyWasher(grow(rect,0,8), grow(rect,0,8), 30, 5, 20);
+	obj = new EnemyWasher(grow(rect,0,8), grow(rect,0,8), 30);
+	obj.attack = 3;
+	obj.hostility = 20;
+	obj.sound = game.audios.washer;
 	break;
       case T.CLOCK:
-	obj = new EnemyStill(grow(rect,0,16), grow(rect,-2,16), S.CLOCK, 20, 1, 10, 2);
+	obj = new EnemyStill(grow(rect,0,16), grow(rect,-2,16), S.CLOCK, 20);
+	obj.maxphase = 2;
+	//obj.sound = game.audios.clock; TODO
 	break;
       case T.PHONE:
-	obj = new EnemyStill(grow(rect,0,8), grow(rect,-1,0), S.PHONE, 10, 0, 5, 2);
+	obj = new EnemyStill(grow(rect,0,8), grow(rect,-1,0), S.PHONE, 10);
+	obj.hostility = 5;
+	obj.maxphase = 2;
+	//obj.sound = game.audios.phone; TODO
 	break;
       case T.COOKER:
-	obj = new EnemyStill(grow(rect,0,8), grow(rect,-1,0), S.COOKER, 20, 2, 1, 2);
+	obj = new EnemyStill(grow(rect,0,8), grow(rect,-1,0), S.COOKER, 20);
+	obj.hostility = 2;
+	obj.attack = 1;
+	obj.maxphase = 2;
+	//obj.sound = game.audios.cooker; TODO
 	break;
       case T.PLANT:
 	obj = new EnemyStill(rect, grow(rect,-1,-2), S.PLANT, 10);
 	break;
       case T.FISHBOWL:
-	obj = new EnemyStill(rect, grow(rect,-1,-2), S.FISHBOWL, 5, 0, -1, 2);
+	obj = new EnemyStill(rect, grow(rect,-1,-2), S.FISHBOWL, 5);
+	obj.maxphase = 2;
 	break;
       case T.FRIDGE:
-	obj = new EnemyFridge(grow(rect,0,8), grow(rect,0,8), 1);
+	obj = new EnemyFridge(grow(rect,0,8), grow(rect,0,8), 20);
 	break;
       case T.VASE:
 	obj = new EnemyStill(grow(rect,0,12), grow(rect,-2,-4), S.VASE, 8);
@@ -190,10 +211,16 @@ Level.prototype.init = function ()
 	obj = new Glasses(rect, grow(rect,0,-8));
 	break;
       case T.FAN:
-	obj = new EnemyFan(grow(rect,0,16), grow(rect,0,8), 20, 1, 20);
+	obj = new EnemyFan(grow(rect,0,16), grow(rect,0,8), 20);
+	obj.hostility = 20;
+	obj.attack = 1;
+	//obj.sound = game.audios.fan; TODO
 	break;
       case T.DISH:
-	obj = new EnemyStill(rect, rect, S.DISH, 20, 1, 20, 2);
+	obj = new EnemyStill(rect, rect, S.DISH, 20);
+	obj.hostility = 20;
+	obj.maxphase = 2;
+	obj.sound = game.audios.satellite;
 	break;
       }
       scene.addObject(obj);
@@ -210,38 +237,7 @@ Level.prototype.init = function ()
   playSound(this.game.audios.baby);
 };
 
-Level.prototype.update = function ()
-{
-  // [OVERRIDE]
-  this.updateObjects(this.tasks);
-  this.cleanObjects(this.tasks);
-  this.cleanObjects(this.sprites);
-  this.cleanObjects(this.colliders);
-  var rect = this.player.bounds.inflate(this.window.width/2, this.window.height/2);
-  this.setCenter(rect);
-  this.ticks++;
-
-  if (this.playable) {
-    if (0 < this.timelimit) {
-      var t = Math.floor(this.ticks / this.game.framerate);
-      this.timeleft = clamp(0, this.timelimit-t, 999);
-      if (this.timeleft <= 0) {
-	// parent!
-	playSound(this.game.audios.parent);
-	this.endLevel('PARENT BACK!', 3.5, 'LOST');
-	if (this.door !== null) {
-	  this.door.tileno = S.PARENT;
-	}
-      }
-    }
-    if (this.player.health <= 0) {
-      // nap time!
-      this.endLevel('NAP TIME!', 2.0, 'LOST');
-    }
-  }
-};
-
-Level.prototype.endLevel = function (text, duration, state)
+Level.prototype.finish = function (text, duration, state)
 {
   var game = this.game;
   var scene = this;
@@ -271,6 +267,47 @@ Level.prototype.setCenter = function (rect)
   }
   this.window.x = clamp(0, this.window.x, this.world.width-this.window.width);
   this.window.y = clamp(0, this.window.y, this.world.height-this.window.height);
+};
+
+Level.prototype.update = function ()
+{
+  // [OVERRIDE]
+  this.updateObjects(this.tasks);
+  this.cleanObjects(this.tasks);
+  this.cleanObjects(this.sprites);
+  this.cleanObjects(this.colliders);
+  var rect = this.player.bounds.inflate(this.window.width/2, this.window.height/2);
+  this.setCenter(rect);
+  this.ticks++;
+
+  for (var i = 0; i < this.colliders.length; i++) {
+    var obj = this.colliders[i];
+    if (obj instanceof Enemy) {
+      if (obj.alive && obj.scene === this &&
+	  obj.hitbox !== null && obj.hitbox.overlap(rect)) {
+	obj.makeNoise(this.game.framerate*3);
+      }
+    }
+  }
+  
+  if (this.playable) {
+    if (0 < this.timelimit) {
+      var t = Math.floor(this.ticks / this.game.framerate);
+      this.timeleft = clamp(0, this.timelimit-t, 999);
+      if (this.timeleft <= 0) {
+	// parent!
+	playSound(this.game.audios.parent);
+	this.finish('PARENT BACK!', 3.5, 'LOST');
+	if (this.door !== null) {
+	  this.door.tileno = S.PARENT;
+	}
+      }
+    }
+    if (this.player.health <= 0) {
+      // nap time!
+      this.finish('NAP TIME!', 2.0, 'LOST');
+    }
+  }
 };
 
 Level.prototype.render = function (ctx, bx, by)

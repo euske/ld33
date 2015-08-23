@@ -317,9 +317,9 @@ function Baby(bounds, hitbox, health)
   this.step = 0;
   this.motion = new Vec2(0, 0);
   this.dir = new Vec2(+1,0);
-  this.invuln = 0;
-  this.kawaii = 0;
-  this.hyper = 0;
+  this.invuln = new Counter();
+  this.kawaii = new Counter();
+  this.hyper = new Counter();
   this.attacking = 0;
 }
 
@@ -346,19 +346,13 @@ Baby.prototype.update = function ()
     this.dir = this.motion.copy();
     this.step++;
   }
-  
-  if (0 < this.invuln) {
-    this.invuln--;
-  }
-  if (0 < this.kawaii) {
-    this.kawaii--;
-  }
-  if (0 < this.hyper) {
-    this.hyper--;
-  }
+
+  this.invuln.update();
+  this.kawaii.update();
+  this.hyper.update();
   
   var t = Math.floor(this.step/4)%2;
-  this.tileno = (0 < this.hyper)? S.GABY : S.BABY;
+  this.tileno = (0 < this.hyper.count)? S.GABY : S.BABY;
   if (this.dir.y < 0) {
     this.tileno += 4+t;
   } else if (0 < this.dir.y) {
@@ -370,13 +364,12 @@ Baby.prototype.update = function ()
 
 Baby.prototype.hit = function (attack)
 {
-  if (this.invuln <= 0) {
+  if (this.invuln.trigger(Math.floor(this.scene.game.framerate/4))) {
     Actor.prototype.hit.call(this, attack);
     var particle = new Particle(this.bounds.move(0, -4),
 				0.5, new Vec2(0, -1),
 				S.SWEAT, 0.1, 2);
     this.scene.addObject(particle);
-    this.invuln = Math.floor(this.scene.game.framerate/4);
     playSound(this.scene.game.audios.hurt);
   }
 };
@@ -400,16 +393,16 @@ Baby.prototype.move = function (dx, dy)
 	var attack = clamp(0, this.attacking-this.minattack, this.maxattack);
 	obj.hit(attack);
 	this.scene.target = obj;
-      } else if (this.kawaii == 0) {
+      } else if (0 < obj.hostility &&
+		 this.kawaii.trigger(Math.floor(this.scene.game.framerate/4))) {
 	obj.love(1);
 	playSound(this.scene.game.audios.love);
-	this.kawaii = Math.floor(this.scene.game.framerate/4);
       }
     } else if (obj instanceof Milk) {
       this.health = clamp(0, this.health+obj.recovery, this.maxhealth);
       obj.die();
     } else if (obj instanceof Glasses) {
-      this.hyper = obj.duration * this.scene.game.framerate;
+      this.hyper.count = obj.duration * this.scene.game.framerate;
       obj.die();
     }
   }
@@ -422,17 +415,20 @@ Baby.prototype.action = function (action)
   if (action != 0) {
     if (this.attacking == 0) {
       this.attacking = 1;
+      playSound(this.scene.game.audios.attack);
     }
   }
 };
 
 // Enemy
-function Enemy(bounds, hitbox, tileno, health, attack, hostility)
+function Enemy(bounds, hitbox, tileno, health)
 {
   Actor.call(this, bounds, hitbox, tileno, health);
-  this.attack = (attack !== undefined)? attack : 0;
-  this.hostility = (hostility !== undefined)? hostility : -1;
+  this.attack = 0;
+  this.hostility = -1;
+  this.sound = null;
   this.healthbar = null;
+  this.noiseCounter = new Counter();
   this.t0 = 0;
 }
 
@@ -475,7 +471,7 @@ Enemy.prototype.hit = function (attack)
     }
     this.healthbar = new HealthBar(this.bounds, 0.5, this.health/this.maxhealth);
     this.scene.addObject(this.healthbar);
-    playSound(this.scene.game.audios.attack);
+    playSound(this.scene.game.audios.hit);
   }
 };
 
@@ -498,13 +494,22 @@ Enemy.prototype.update = function ()
 				S.HEART, 0.3, 2);
     this.scene.addObject(particle);
   }
+  this.noiseCounter.update();
 };
 
-function EnemyStill(bounds, hitbox, tileno, health, attack, hostility, maxphase)
+Enemy.prototype.makeNoise = function (duration)
 {
-  Enemy.call(this, bounds, hitbox, tileno, health, attack, hostility);
+  if (this.sound !== null &&
+      this.noiseCounter.trigger(duration)) {
+    playSound(this.sound);
+  }
+};
+
+function EnemyStill(bounds, hitbox, tileno, health)
+{
+  Enemy.call(this, bounds, hitbox, tileno, health);
   this.basetile = tileno;
-  this.maxphase = (maxphase !== undefined)? maxphase : 1;
+  this.maxphase = 1;
   this.phase = 0;
 }
 
@@ -517,9 +522,9 @@ EnemyStill.prototype.update = function ()
   this.tileno = this.basetile+this.phase;
 };
 
-function EnemyCleaner(bounds, hitbox, health, attack, hostility)
+function EnemyCleaner(bounds, hitbox, health)
 {
-  Enemy.call(this, bounds, hitbox, S.CLEANER, health, attack, hostility);
+  Enemy.call(this, bounds, hitbox, S.CLEANER, health);
   this.speed = 2;
   this.step = 0;
   this.dir = new Vec2(+1,0);
@@ -556,9 +561,10 @@ EnemyCleaner.prototype.update = function ()
   this.tileno = S.CLEANER + Math.floor(this.step/4)%2*2 + ((0 < this.dir.x)? 0 : +1);
 };
 
-function EnemyWasher(bounds, hitbox, health, attack, hostility)
+function EnemyWasher(bounds, hitbox, health)
 {
-  EnemyStill.call(this, bounds, hitbox, S.WASHER, health, attack, hostility, 2);
+  EnemyStill.call(this, bounds, hitbox, S.WASHER, health);
+  this.maxphase = 2;
 }
 
 EnemyWasher.prototype = Object.create(EnemyStill.prototype);
@@ -583,9 +589,9 @@ EnemyWasher.prototype.update = function ()
   }
 };
 
-function EnemyFridge(bounds, hitbox, health, attack, hostility)
+function EnemyFridge(bounds, hitbox, health)
 {
-  EnemyStill.call(this, bounds, hitbox, S.FRIDGE, health, attack, hostility);
+  EnemyStill.call(this, bounds, hitbox, S.FRIDGE, health);
 }
 
 EnemyFridge.prototype = Object.create(EnemyStill.prototype);
@@ -597,9 +603,9 @@ EnemyFridge.prototype.die = function ()
   this.scene.addObject(item);
 };
 
-function EnemyFan(bounds, hitbox, health, attack, hostility)
+function EnemyFan(bounds, hitbox, health)
 {
-  Enemy.call(this, bounds, hitbox, S.FAN, health, attack, hostility);
+  Enemy.call(this, bounds, hitbox, S.FAN, health);
   this.speed = 1;
   this.step = 0;
   this.dir = new Vec2(+1,0);

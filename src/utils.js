@@ -191,3 +191,31 @@ Slot.prototype.signal = function ()
     this.receivers[i].apply(null, args);
   }
 };
+
+// Counter
+function Counter()
+{
+  this.count = 0;
+}
+
+Counter.prototype.toString = function ()
+{
+  return ('<Counter('+this.count+')>');
+};
+
+Counter.prototype.update = function ()
+{
+  if (0 < this.count) {
+    this.count--;
+  }
+};
+
+Counter.prototype.trigger = function (duration)
+{
+  if (0 < this.count) {
+    return false;
+  } else {
+    this.count = duration;
+    return true;
+  }
+};
