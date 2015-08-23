@@ -303,6 +303,7 @@ Glasses.prototype.toString = function ()
 Glasses.prototype.die = function ()
 {
   this.alive = false;
+  playSound(this.scene.game.audios.hyper);
 };
 
 
@@ -364,13 +365,15 @@ Baby.prototype.update = function ()
 
 Baby.prototype.hit = function (attack)
 {
-  if (this.invuln.trigger(Math.floor(this.scene.game.framerate/4))) {
-    Actor.prototype.hit.call(this, attack);
-    var particle = new Particle(this.bounds.move(0, -4),
-				0.5, new Vec2(0, -1),
-				S.SWEAT, 0.1, 2);
-    this.scene.addObject(particle);
-    playSound(this.scene.game.audios.hurt);
+  if (this.hyper.count == 0) {
+    if (this.invuln.trigger(Math.floor(this.scene.game.framerate/4))) {
+      Actor.prototype.hit.call(this, attack);
+      var particle = new Particle(this.bounds.move(0, -4),
+				  0.5, new Vec2(0, -1),
+				  S.SWEAT, 0.1, 2);
+      this.scene.addObject(particle);
+      playSound(this.scene.game.audios.hurt);
+    }
   }
 };
 
@@ -572,15 +575,19 @@ EnemyWasher.prototype = Object.create(EnemyStill.prototype);
 EnemyWasher.prototype.update = function ()
 {
   EnemyStill.prototype.update.call(this);
-  if (rnd(3) == 0) {
-    var v = new Vec2();
+  if (rnd(2) == 0) {
+    var v = new Vec2(0, 0);
     if (this.hostility == 0) {
       var target = this.scene.target;
       if (target === null || target === this || !target.alive) {
 	target = this.scene.player;
       }
-      v.x = (target.hitbox.x < this.hitbox.x)? -1 : +1;
-      v.y = (target.hitbox.y < this.hitbox.y)? -1 : +1;
+      if (rnd(2) == 0) {
+	v.x = (target.hitbox.x < this.hitbox.x)? -1 : +1;
+      } 
+      if (rnd(2) == 0) {
+	v.y = (target.hitbox.y < this.hitbox.y)? -1 : +1;
+      }
     } else {
       v.x = rnd(3)-1;
       v.y = rnd(3)-1;
