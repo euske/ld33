@@ -84,6 +84,45 @@ Sprite.prototype.render = function (ctx, bx, by)
 };
 
 
+// Banner
+function Banner(text, duration)
+{
+  Sprite.call(this, null);
+  this.text = text;
+  this.duration = duration;
+  this.endhook = null;
+}
+
+Banner.prototype = Object.create(Sprite.prototype);
+
+Banner.prototype.toString = function ()
+{
+  return '<Banner: '+this.text+'>';
+};
+
+Banner.prototype.update = function ()
+{
+  if (this.scene.ticks < this.ticks0+this.scene.game.framerate*this.duration) {
+    ;
+  } else {
+    this.alive = false;
+    if (this.endhook !== null) {
+      this.endhook();
+    }
+  }
+};
+
+Banner.prototype.render = function (ctx, bx, by) {
+  var game = this.scene.game;
+  if (blink(this.scene.ticks, game.framerate/2)) {
+    bx += this.scene.window.width/2;
+    by += this.scene.window.height/2;
+    game.renderString(game.images.font_b, this.text, 1, bx+1, by+1, 'center');
+    game.renderString(game.images.font_w, this.text, 1, bx, by, 'center');
+  }
+};
+
+
 // Particle
 function Particle(bounds, duration, dir, tileno, cycle, maxphase)
 {
@@ -106,8 +145,9 @@ Particle.prototype.toString = function ()
 Particle.prototype.update = function ()
 {
   Sprite.prototype.update.call(this);
-  this.phase = Math.floor(this.scene.ticks/this.cycle) % this.maxphase;
-  if (this.scene.ticks < this.ticks0+this.duration) {
+  var fps = this.scene.game.framerate;
+  this.phase = Math.floor(this.scene.ticks/(fps*this.cycle)) % this.maxphase;
+  if (this.scene.ticks < this.ticks0+fps*this.duration) {
     this.bounds.x += this.dir.x;
     this.bounds.y += this.dir.y;
   } else {
@@ -142,7 +182,7 @@ HealthBar.prototype = Object.create(Sprite.prototype);
 HealthBar.prototype.update = function ()
 {
   Sprite.prototype.update.call(this);
-  if (this.scene.ticks < this.ticks0+this.duration) {
+  if (this.scene.ticks < this.ticks0+this.scene.game.framerate*this.duration) {
     ;
   } else {
     this.alive = false;
@@ -211,9 +251,8 @@ Actor.prototype.hit = function (attack)
   log("hit: "+this);
   this.health = Math.max(0, this.health-attack);
   if (this.health == 0) {
-    var fps = this.scene.game.framerate;
-    var particle = new Particle(this.bounds, fps, new Vec2(0,0),
-				S.EXPLOSION, Math.floor(fps/8), 2);
+    var particle = new Particle(this.bounds, 1.0, new Vec2(0,0),
+				S.EXPLOSION, 0.2, 2);
     this.scene.addObject(particle);
     this.alive = false;
   }
@@ -278,12 +317,11 @@ Baby.prototype.hit = function (attack)
 {
   if (this.invuln <= 0) {
     Actor.prototype.hit.call(this, attack);
-    var fps = this.scene.game.framerate;
     var particle = new Particle(this.bounds.move(0, -4),
-				Math.floor(fps/2), new Vec2(0, -1),
-				S.SWEAT, Math.floor(fps/4), 2);
+				0.5, new Vec2(0, -1),
+				S.SWEAT, 0.1, 2);
     this.scene.addObject(particle);
-    this.invuln = Math.floor(fps/4);
+    this.invuln = Math.floor(this.scene.game.framerate/4);
   }
 };
 
@@ -332,8 +370,8 @@ Baby.prototype.action = function (action)
 function Enemy(bounds, hitbox, tileno, health, attack, hostility)
 {
   Actor.call(this, bounds, hitbox, tileno, health);
-  this.attack = (attack !== null)? attack : 0;
-  this.hostility = (hostility !== null)? hostility : -1;
+  this.attack = (attack !== undefined)? attack : 0;
+  this.hostility = (hostility !== undefined)? hostility : -1;
   this.healthbar = null;
   this.t0 = 0;
 }
@@ -371,12 +409,10 @@ Enemy.prototype.hit = function (attack)
 {
   Actor.prototype.hit.call(this, attack);
   if (0 < this.health) {
-    var fps = this.scene.game.framerate;
     if (this.healthbar !== null) {
       this.healthbar.alive = false;
     }
-    this.healthbar = new HealthBar(this.bounds, Math.floor(fps/2),
-				   this.health/this.maxhealth);
+    this.healthbar = new HealthBar(this.bounds, 0.5, this.health/this.maxhealth);
     this.scene.addObject(this.healthbar);
   }
 };
@@ -395,8 +431,8 @@ Enemy.prototype.update = function ()
 {
   var fps = this.scene.game.framerate;
   if (this.hostility == 0 && ((this.scene.ticks-this.t0) % fps) == 0) {
-    var particle = new Particle(this.bounds, fps, new Vec2(0,-1),
-				S.HEART, Math.floor(fps/3), 2);
+    var particle = new Particle(this.bounds, 1.0, new Vec2(0,-1),
+				S.HEART, 0.3, 2);
     this.scene.addObject(particle);
   }
 };

@@ -7,15 +7,12 @@ ConceptS:
 
 Objectives:
  Try to destroy as much as possible.
- kinda reverse-clicking game. you can get a better weapon/tool as you go
- some weapons can destroy things silently.
-  Weapons? shtick/talc powder/milk bottle/diapers
-   power tools: hammer, drill, nailgun, thumb tack, sun glasses, bandana, ducky thing, fireworks, pillows and cusions
+ kinda reverse-clicking game. you can get a automated weapon/tool as you go
 
-TODO: fan, surveillance camera, satellite dish. cat?, dog?, cusion?
+TODO: fan, surveillance camera, satellite dish. cat?, dog?, cusion?, sun glasses?
  gamey things
  milk bottle
- health bar (baby)
- time limit
  microwave attack
+ sound / env. sound
  fridge should contain milk
+ ?move mechanics?

@@ -113,6 +113,9 @@ Level.prototype.init = function ()
   this.world.height = this.tilemap.height * this.tilesize;
   this.window.width = Math.min(this.world.width, this.window.width);
   this.window.height = Math.min(this.world.height, this.window.height);
+
+  this.player = null;
+  this.door = null;
     
   var game = this.game;
   var scene = this;
@@ -125,11 +128,12 @@ Level.prototype.init = function ()
       // EnemyStill(rect, tileno, health[, attack, hostility, maxphase])
       switch (c) {
       case T.BABY:
-	obj = new Baby(rect, grow(rect,-2,-2), 1000);
+	obj = new Baby(rect, grow(rect,-2,-2), 10);
 	scene.player = obj;
 	break;
       case T.REALDOOR:
-	obj = new EnemyStill(grow(rect,0,16), grow(rect,0,16), S.DOOR, 1000);
+	obj = new Enemy(grow(rect,0,16), grow(rect,0,16), S.DOOR, 1000);
+	scene.door = obj;
 	break;
       case T.TV:
 	obj = new EnemyStill(rect, grow(rect,-1,-2), S.TV, 10, 0, -1, 2);
@@ -184,6 +188,9 @@ Level.prototype.init = function ()
   this.tilemap.apply(null, f);
 
   this.target = null;
+  this.timelimit = 2;
+  this.timeleft = 999;
+  this.playable = true;
 };
 
 Level.prototype.update = function ()
@@ -196,6 +203,36 @@ Level.prototype.update = function ()
   var rect = this.player.bounds.inflate(this.window.width/2, this.window.height/2);
   this.setCenter(rect);
   this.ticks++;
+
+  if (this.playable) {
+    if (0 < this.timelimit) {
+      var t = Math.floor(this.ticks / this.game.framerate);
+      this.timeleft = clamp(0, this.timelimit-t, 999);
+      if (this.timeleft <= 0) {
+	// parent!
+	this.endLevel('PARENT BACK!', 3.5, 'LOST');
+	if (this.door !== null) {
+	  this.door.tileno = S.PARENT;
+	}
+      }
+    }
+    if (this.player.health <= 0) {
+      // nap time!
+      this.endLevel('NAP TIME!', 2.0, 'LOST');
+    }
+  }
+};
+
+Level.prototype.endLevel = function (text, duration, state)
+{
+  var game = this.game;
+  var scene = this;
+  var banner = new Banner(text, duration);
+  banner.endhook = function () {
+    scene.changed.signal(state);
+  };
+  this.addObject(banner);
+  this.playable = false;
 };
 
 Level.prototype.setCenter = function (rect)
@@ -287,6 +324,21 @@ Level.prototype.render = function (ctx, bx, by)
       obj.render(ctx, wx, wy);
     }
   }
+
+  // Draw the status.
+  var barsize = new Vec2(40,4);
+  var value = this.player.health / this.player.maxhealth;
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = '#000000';
+  ctx.strokeRect(bx+3.5, by+this.window.height-barsize.y-3.5, barsize.x+1, barsize.y+1);
+  ctx.fillStyle = (value <= 0.3)? '#ff0000' : '#00ff00';
+  ctx.fillRect(bx+4, by+this.window.height-barsize.y-3, Math.floor(barsize.x*value), barsize.y);
+  this.game.renderString(this.game.images.font_b, String(this.timeleft), 1,
+			 bx+this.window.width-3, by+this.window.height-9,
+			 'right');
+  this.game.renderString(this.game.images.font_w, String(this.timeleft), 1,
+			 bx+this.window.width-4, by+this.window.height-10,
+			 'right');
 };
 
 Level.prototype.collideTile = function (rect, v0)

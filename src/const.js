@@ -52,6 +52,7 @@ S = {
   FRIDGE: 34,
   VASE: 35,
   LAMP: 36,
+  PARENT: 37,
 };
 
 T = {
