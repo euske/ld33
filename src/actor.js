@@ -535,7 +535,7 @@ EnemyCleaner.prototype = Object.create(Enemy.prototype);
 EnemyCleaner.prototype.update = function ()
 {
   Enemy.prototype.update.call(this);
-  if (rnd(10) == 0) {
+  if (rnd(this.scene.game.framerate) == 0) {
     if (this.hostility == 0) {
       var target = this.scene.target;
       if (target === null || target === this || !target.alive) {
@@ -622,4 +622,44 @@ EnemyFan.prototype.update = function ()
   }
   this.step++;
   this.tileno = S.FAN + (this.step%2)*2 + ((0 < this.dir.x)? 0 : +1);
+};
+
+function EnemyHazard(bounds, hitbox, tileno, health)
+{
+  EnemyStill.call(this, bounds, hitbox, tileno, health);
+  this.attacking = new Counter();
+  this.attackSound = null;
+  this.attackImage = null;
+}
+
+EnemyHazard.prototype = Object.create(EnemyStill.prototype);
+
+EnemyHazard.prototype.update = function ()
+{
+  EnemyStill.prototype.update.call(this);
+  this.attacking.update();
+  if (rnd(this.scene.game.framerate*2) == 0 &&
+      this.attacking.trigger(Math.floor(this.scene.game.framerate/4))) {
+    var range = this.bounds.inflate(this.bounds.width*3, this.bounds.height*3);
+    var objs = this.scene.findObjects(range);
+    for (var i = 0; i < objs.length; i++) {
+      var obj = objs[i];
+      if (obj instanceof Baby) {
+	obj.hit(this.attack);
+      }
+    }
+    if (this.attackSound !== null) {
+      playSound(this.attackSound);
+    }
+  }
+};
+
+EnemyHazard.prototype.render = function (ctx, bx, by)
+{
+  EnemyStill.prototype.render.call(this, ctx, bx, by);
+  if (this.attackImage !== null && 0 < this.attacking.count) {
+    ctx.drawImage(this.attackImage, 
+		  bx+this.bounds.x+(this.bounds.width-this.attackImage.width)/2,
+		  by+this.bounds.y+(this.bounds.height-this.attackImage.height)/2);
+  }
 };

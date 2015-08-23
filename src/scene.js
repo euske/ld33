@@ -158,11 +158,12 @@ Level.prototype.init = function ()
 	obj.sound = game.audios.cleaner;
 	break;
       case T.MICROWAVE:
-	obj = new EnemyStill(grow(rect,0,16), grow(rect,0,12), S.MICROWAVE, 30);
+	obj = new EnemyHazard(grow(rect,0,16), grow(rect,0,12), S.MICROWAVE, 30);
 	obj.attack = 1;
 	obj.hostility = 20;
 	obj.maxphase = 2;
-	obj.sound = game.audios.microwave;
+	obj.attackSound = game.audios.microwave;
+	obj.attackImage = game.images.eshock;
 	break;
       case T.WASHER:
 	obj = new EnemyWasher(grow(rect,0,8), grow(rect,0,8), 30);
@@ -182,11 +183,12 @@ Level.prototype.init = function ()
 	//obj.sound = game.audios.phone; TODO
 	break;
       case T.COOKER:
-	obj = new EnemyStill(grow(rect,0,8), grow(rect,-1,0), S.COOKER, 20);
+	obj = new EnemyHazard(grow(rect,0,8), grow(rect,-1,0), S.COOKER, 20);
 	obj.hostility = 2;
 	obj.attack = 1;
 	obj.maxphase = 2;
-	//obj.sound = game.audios.cooker; TODO
+	//obj.attackSound = game.audios.cooker; // TODO
+	obj.attackImage = game.images.steam;
 	break;
       case T.PLANT:
 	obj = new EnemyStill(rect, grow(rect,-1,-2), S.PLANT, 10);
@@ -280,13 +282,11 @@ Level.prototype.update = function ()
   this.setCenter(rect);
   this.ticks++;
 
-  for (var i = 0; i < this.colliders.length; i++) {
-    var obj = this.colliders[i];
+  var objs = this.findObjects(rect);
+  for (var i = 0; i < objs.length; i++) {
+    var obj = objs[i];
     if (obj instanceof Enemy) {
-      if (obj.alive && obj.scene === this &&
-	  obj.hitbox !== null && obj.hitbox.overlap(rect)) {
-	obj.makeNoise(this.game.framerate*3);
-      }
+      obj.makeNoise(this.game.framerate*3);
     }
   }
   
@@ -425,6 +425,21 @@ Level.prototype.collideObject = function (obj0, v0, objs)
     }
   }
   return v;
+};
+
+Level.prototype.findObjects = function (rect)
+{
+  var a = [];
+  for (var i = 0; i < this.colliders.length; i++) {
+    var obj = this.colliders[i];
+    if (obj instanceof Actor) {
+      if (obj.alive && obj.scene === this &&
+	  obj.hitbox !== null && obj.hitbox.overlap(rect)) {
+	a.push(obj);
+      }
+    }
+  }
+  return a;
 };
 
 Level.prototype.findOverlappingObjects = function (obj0, v0)
