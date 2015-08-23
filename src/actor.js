@@ -90,7 +90,7 @@ function Banner(text, duration)
   Sprite.call(this, null);
   this.text = text;
   this.duration = duration;
-  this.endhook = null;
+  this.finished = new Slot();
 }
 
 Banner.prototype = Object.create(Sprite.prototype);
@@ -106,9 +106,7 @@ Banner.prototype.update = function ()
     ;
   } else {
     this.alive = false;
-    if (this.endhook !== null) {
-      this.endhook();
-    }
+    this.finished.signal();
   }
 };
 

@@ -100,7 +100,7 @@ function Level(game)
 
 Level.prototype = Object.create(Scene.prototype);
   
-Level.prototype.init = function ()
+Level.prototype.init = function (level)
 {
   // [OVERRIDE]
   this.tasks = [];
@@ -108,7 +108,9 @@ Level.prototype.init = function ()
   this.colliders = [];
   this.ticks = 0;
 
-  this.tilemap = new TileMap(this.tilesize, Levels.LEVEL1);
+  this.level = level;
+  var leveldata = LEVELDATA[level-1];
+  this.tilemap = new TileMap(this.tilesize, leveldata.map);
   this.world.width = this.tilemap.width * this.tilesize;
   this.world.height = this.tilemap.height * this.tilesize;
   this.window.width = Math.min(this.world.width, this.window.width);
@@ -125,7 +127,6 @@ Level.prototype.init = function ()
     if (T.isActor(c)) {
       var rect = tilemap.map2coord(new Vec2(x,y));
       var obj;
-      // EnemyStill(rect, tileno, health[, attack, hostility, maxphase])
       switch (c) {
       case T.BABY:
 	obj = new Baby(rect, grow(rect,-2,-2), 10);
@@ -162,7 +163,7 @@ Level.prototype.init = function ()
 	obj.attack = 1;
 	obj.hostility = 20;
 	obj.maxphase = 2;
-	obj.attackSound = game.audios.microwave;
+	obj.attackSound = game.audios.eshock;
 	obj.attackImage = game.images.eshock;
 	break;
       case T.WASHER:
@@ -187,7 +188,7 @@ Level.prototype.init = function ()
 	obj.hostility = 2;
 	obj.attack = 1;
 	obj.maxphase = 2;
-	//obj.attackSound = game.audios.cooker; // TODO
+	obj.attackSound = game.audios.steam;
 	obj.attackImage = game.images.steam;
 	break;
       case T.PLANT:
@@ -231,11 +232,14 @@ Level.prototype.init = function ()
   };
   this.tilemap.apply(null, f);
 
-  this.target = null;
-  this.timelimit = 100;
+  this.timelimit = leveldata.timelimit;
   this.timeleft = 999;
-  this.playable = true;
 
+  var banner = new Banner(leveldata.text, 2.0);
+  this.addObject(banner);
+
+  this.playable = true;
+  this.target = null;
   playSound(this.game.audios.baby);
 };
 
@@ -244,9 +248,9 @@ Level.prototype.finish = function (text, duration, state)
   var game = this.game;
   var scene = this;
   var banner = new Banner(text, duration);
-  banner.endhook = function () {
-    scene.changed.signal(state);
-  };
+  banner.finished.subscribe(function () {
+    scene.changed.signal(state, scene.level);
+  });
   this.addObject(banner);
   this.playable = false;
 };
@@ -283,10 +287,12 @@ Level.prototype.update = function ()
   this.ticks++;
 
   var objs = this.findObjects(rect);
+  var enemies = 0;
   for (var i = 0; i < objs.length; i++) {
     var obj = objs[i];
     if (obj instanceof Enemy) {
       obj.makeNoise(this.game.framerate*3);
+      enemies++;
     }
   }
   
@@ -306,6 +312,10 @@ Level.prototype.update = function ()
     if (this.player.health <= 0) {
       // nap time!
       this.finish('NAP TIME!', 2.0, 'LOST');
+    }
+    if (enemies == 0) {
+      // destroyed all enemies!
+      this.finish('CLEAR! <3', 2.0, 'WON')
     }
   }
 };
@@ -388,12 +398,14 @@ Level.prototype.render = function (ctx, bx, by)
   ctx.strokeRect(bx+3.5, by+this.window.height-barsize.y-3.5, barsize.x+1, barsize.y+1);
   ctx.fillStyle = (value <= 0.3)? '#ff0000' : '#00ff00';
   ctx.fillRect(bx+4, by+this.window.height-barsize.y-3, Math.floor(barsize.x*value), barsize.y);
-  this.game.renderString(this.game.images.font_b, String(this.timeleft), 1,
-			 bx+this.window.width-3, by+this.window.height-9,
-			 'right');
-  this.game.renderString(this.game.images.font_w, String(this.timeleft), 1,
-			 bx+this.window.width-4, by+this.window.height-10,
-			 'right');
+  if (0 < this.timelimit) {
+    this.game.renderString(this.game.images.font_b, String(this.timeleft), 1,
+			   bx+this.window.width-3, by+this.window.height-9,
+			   'right');
+    this.game.renderString(this.game.images.font_w, String(this.timeleft), 1,
+			   bx+this.window.width-4, by+this.window.height-10,
+			   'right');
+  }
 };
 
 Level.prototype.collideTile = function (rect, v0)

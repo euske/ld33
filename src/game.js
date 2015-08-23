@@ -300,8 +300,8 @@ Game.prototype.init = function (state)
   }
   function level_changed(e, arg) {
     switch (arg) {
-    case 'WON': game.post(function () { game.init(2); }); break;
-    case 'LOST': game.post(function () { game.init(3); }); break;
+    case 'LOST': game.post(function () { game.init(state); }); break;
+    case 'WON': game.post(function () { game.init(state+1); }); break;
     }
   }
   this.music = null;
@@ -313,7 +313,7 @@ Game.prototype.init = function (state)
     break;
   case 1:
     this.scene = new Level(this);
-    this.scene.init();
+    this.scene.init(state);
     this.scene.changed.subscribe(level_changed);
     this.music = this.scene.music;
     break;
@@ -322,12 +322,6 @@ Game.prototype.init = function (state)
     this.scene.init('<b>You Won!</b><p>Press Enter to restart.');
     this.scene.changed.subscribe(title_changed);
     //this.music = this.audios.ending;
-    break;
-  case 3:
-    this.scene = new Title(this);
-    this.scene.init('<b>You Lost!</b><p>Press Enter to restart.');
-    this.scene.changed.subscribe(title_changed);
-    //this.music = this.audios.explosion;
     break;
   }
   
