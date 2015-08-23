@@ -129,12 +129,45 @@ Particle.prototype.render = function (ctx, bx, by)
 };
 
 
+// HealthBar
+function HealthBar(bounds, duration, value)
+{
+  Sprite.call(this, bounds);
+  this.duration = duration;
+  this.value = value;
+}
+
+HealthBar.prototype = Object.create(Sprite.prototype);
+
+HealthBar.prototype.update = function ()
+{
+  Sprite.prototype.update.call(this);
+  if (this.scene.ticks < this.ticks0+this.duration) {
+    ;
+  } else {
+    this.alive = false;
+  }
+};
+
+HealthBar.prototype.render = function (ctx, bx, by)
+{
+  var tw = this.scene.tilesize;
+  var w = Math.floor(this.value*tw);
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = '#ff0000';
+  ctx.strokeRect(bx+this.bounds.x-0.5, by+this.bounds.y-3.5, tw+1, 3);
+  ctx.fillStyle = '#00ff00';
+  ctx.fillRect(bx+this.bounds.x, by+this.bounds.y-4+1, w, 2);
+};
+
+
 // Actor: a character that can interact with other characters.
 function Actor(bounds, hitbox, tileno, health)
 {
   Sprite.call(this, bounds);
   this.hitbox = (hitbox === null)? hitbox : hitbox.copy();
   this.tileno = tileno;
+  this.maxhealth = health;
   this.health = health;
   this.shadow = true;
 }
@@ -246,7 +279,8 @@ Baby.prototype.hit = function (attack)
   if (this.invuln <= 0) {
     Actor.prototype.hit.call(this, attack);
     var fps = this.scene.game.framerate;
-    var particle = new Particle(this.bounds, Math.floor(fps/2), new Vec2(0, -1),
+    var particle = new Particle(this.bounds.move(0, -4),
+				Math.floor(fps/2), new Vec2(0, -1),
 				S.SWEAT, Math.floor(fps/4), 2);
     this.scene.addObject(particle);
     this.invuln = Math.floor(fps/4);
@@ -330,6 +364,17 @@ Enemy.prototype.move = function (dx, dy)
     }
   }
   Actor.prototype.move.call(this, v.x, v.y);
+};
+
+Enemy.prototype.hit = function (attack)
+{
+  Actor.prototype.hit.call(this, attack);
+  if (0 < this.health) {
+    var fps = this.scene.game.framerate;
+    var particle = new HealthBar(this.bounds, Math.floor(fps/2),
+				 this.health/this.maxhealth);
+    this.scene.addObject(particle);
+  }
 };
 
 Enemy.prototype.love = function (attack)
