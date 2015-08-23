@@ -144,8 +144,11 @@ Level.prototype.init = function ()
       case T.SOFA_L:
 	obj = new EnemyStill(grow(rect,0,12), grow(rect,-1,5), S.SOFA_L, 30);
 	break;
-      case T.TABLE:
-	obj = new EnemyStill(grow(rect,0,5), grow(rect,-1,0), S.TABLE, 20);
+      case T.TABLE1:
+	obj = new EnemyStill(grow(rect,0,5), grow(rect,-1,0), S.TABLE1, 20);
+	break;
+      case T.TABLE2:
+	obj = new EnemyStill(grow(rect,0,4), grow(rect,0,1), S.TABLE2, 20);
 	break;
       case T.CLEANER:
 	obj = new EnemyCleaner(rect, rect, 20, 2, 10);
@@ -172,13 +175,19 @@ Level.prototype.init = function ()
 	obj = new EnemyStill(rect, grow(rect,-1,-2), S.FISHBOWL, 5, 0, -1, 2);
 	break;
       case T.FRIDGE:
-	obj = new EnemyStill(grow(rect,0,8), grow(rect,0,8), S.FRIDGE, 20);
+	obj = new EnemyFridge(grow(rect,0,8), grow(rect,0,8), 1);
 	break;
       case T.VASE:
 	obj = new EnemyStill(grow(rect,0,12), grow(rect,-2,-4), S.VASE, 8);
 	break;
       case T.LAMP:
 	obj = new EnemyStill(grow(rect,0,16), grow(rect,-4,0), S.LAMP, 8);
+	break;
+      case T.MILK:
+	obj = new Milk(grow(rect,0,8), grow(rect,-2,0));
+	break;
+      case T.GLASSES:
+	obj = new Glasses(rect, grow(rect,0,-8));
 	break;
       }
       scene.addObject(obj);
@@ -188,7 +197,7 @@ Level.prototype.init = function ()
   this.tilemap.apply(null, f);
 
   this.target = null;
-  this.timelimit = 2;
+  this.timelimit = 100;
   this.timeleft = 999;
   this.playable = true;
 };

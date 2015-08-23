@@ -251,11 +251,55 @@ Actor.prototype.hit = function (attack)
   log("hit: "+this);
   this.health = Math.max(0, this.health-attack);
   if (this.health == 0) {
-    var particle = new Particle(this.bounds, 1.0, new Vec2(0,0),
-				S.EXPLOSION, 0.2, 2);
-    this.scene.addObject(particle);
-    this.alive = false;
+    this.die();
   }
+};
+
+Actor.prototype.die = function ()
+{
+  var particle = new Particle(this.bounds, 1.0, new Vec2(0,0),
+			      S.EXPLOSION, 0.2, 2);
+  this.scene.addObject(particle);
+  this.alive = false;
+};
+
+
+// Milk
+function Milk(bounds, hitbox)
+{
+  Actor.call(this, bounds, hitbox, S.MILK, 0);
+  this.recovery = 3;
+}
+
+Milk.prototype = Object.create(Actor.prototype);
+
+Milk.prototype.toString = function ()
+{
+  return '<Milk: '+this.bounds+'>';
+};
+
+Milk.prototype.die = function ()
+{
+  this.alive = false;
+};
+
+// sunGlasses
+function Glasses(bounds, hitbox)
+{
+  Actor.call(this, bounds, hitbox, S.GLASSES, 0);
+  this.duration = 10;
+}
+
+Glasses.prototype = Object.create(Actor.prototype);
+
+Glasses.prototype.toString = function ()
+{
+  return '<Glasses: '+this.bounds+'>';
+};
+
+Glasses.prototype.die = function ()
+{
+  this.alive = false;
 };
 
 
@@ -271,6 +315,7 @@ function Baby(bounds, hitbox, health)
   this.motion = new Vec2(0, 0);
   this.dir = new Vec2(+1,0);
   this.invuln = 0;
+  this.hyper = 0;
   this.attacking = 0;
 }
 
@@ -301,9 +346,12 @@ Baby.prototype.update = function ()
   if (0 < this.invuln) {
     this.invuln--;
   }
+  if (0 < this.hyper) {
+    this.hyper--;
+  }
   
   var t = Math.floor(this.step/4)%2;
-  this.tileno = S.BABY;
+  this.tileno = (0 < this.hyper)? S.GABY : S.BABY;
   if (this.dir.y < 0) {
     this.tileno += 4+t;
   } else if (0 < this.dir.y) {
@@ -339,18 +387,20 @@ Baby.prototype.move = function (dx, dy)
   v = this.scene.collideObject(this, v, objs);
   for (var i = 0; i < objs.length; i++) {
     var obj = objs[i];
-    if (0 < this.attacking) {
-      var attack = clamp(0, this.attacking-this.minattack, this.maxattack);
-      if (obj instanceof Actor) {
+    if (obj instanceof Enemy) {
+      if (0 < this.attacking) {
+	var attack = clamp(0, this.attacking-this.minattack, this.maxattack);
 	obj.hit(attack);
-      }
-      if (obj instanceof Enemy) {
 	this.scene.target = obj;
-      }
-    } else {
-      if (obj instanceof Enemy) {
+      } else {
 	obj.love(1);
       }
+    } else if (obj instanceof Milk) {
+      this.health = clamp(0, this.health+obj.recovery, this.maxhealth);
+      obj.die();
+    } else if (obj instanceof Glasses) {
+      this.hyper = obj.duration * this.scene.game.framerate;
+      obj.die();
     }
   }
   Actor.prototype.move.call(this, v.x, v.y);
@@ -393,7 +443,7 @@ Enemy.prototype.move = function (dx, dy)
   for (var i = 0; i < objs.length; i++) {
     var obj = objs[i];
     if (this.hostility <= 0) {
-      if (obj instanceof Enemy) {
+      if (obj instanceof Enemy && obj === this.scene.target) {
 	obj.hit(this.attack);
       }
     } else {
@@ -518,4 +568,18 @@ EnemyWasher.prototype.update = function ()
     }
     this.move(v.x, v.y);
   }
+};
+
+function EnemyFridge(bounds, hitbox, health, attack, hostility)
+{
+  EnemyStill.call(this, bounds, hitbox, S.FRIDGE, health, attack, hostility);
+}
+
+EnemyFridge.prototype = Object.create(EnemyStill.prototype);
+
+EnemyFridge.prototype.die = function ()
+{
+  EnemyStill.prototype.die.call(this);
+  var item = new Milk(this.bounds, this.hitbox);
+  this.scene.addObject(item);
 };

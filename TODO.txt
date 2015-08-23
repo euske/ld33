@@ -9,10 +9,7 @@ Objectives:
  Try to destroy as much as possible.
  kinda reverse-clicking game. you can get a automated weapon/tool as you go
 
-TODO: fan, surveillance camera, satellite dish. cat?, dog?, cusion?, sun glasses?
+TODO: fan, surveillance camera, satellite dish. cat?, dog?, cusion?
  gamey things
- milk bottle
  microwave attack
  sound / env. sound
- fridge should contain milk
- ?move mechanics?

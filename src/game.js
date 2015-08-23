@@ -32,6 +32,8 @@ function makeSprites(sheet, tw, dict)
     case S.BABY_R2:
     case S.CLEANER_R1:
     case S.CLEANER_R2:
+    case S.GABY_R1:
+    case S.GABY_R2:
       add(i, true);
       break;
     }
