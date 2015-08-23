@@ -215,6 +215,8 @@ Level.prototype.render = function (ctx, bx, by)
   var y1 = Math.ceil((window.y+window.height)/tilesize);
   var fx = x0*tilesize-window.x;
   var fy = y0*tilesize-window.y;
+  var wx = bx-window.x;
+  var wy = by-window.y;
 
   // Draw the tilemap.
   tilemap.renderFromBottomLeft(
@@ -228,6 +230,8 @@ Level.prototype.render = function (ctx, bx, by)
     var obj = this.sprites[i];
     if (obj.scene !== this) continue;
     if (obj.bounds === null) continue;
+    if (obj instanceof Particle) continue;
+    if (obj instanceof HealthBar) continue;
     var bounds = obj.bounds;
     if (bounds.overlap(window)) {
       var y = Math.floor((bounds.y+bounds.height/2)/tilesize);
@@ -239,7 +243,20 @@ Level.prototype.render = function (ctx, bx, by)
   map.sort(function (a,b) { return a.y-b.y; });
   for (var i = 0; i < map.length; i++) {
     var obj = map[i].obj;
-    obj.render(ctx, bx-window.x, by-window.y);
+    obj.render(ctx, wx, wy);
+  }
+
+  // Draw the target aim.
+  if (this.target !== null && this.target.alive) {
+    var src = this.game.images.target;
+    var b = this.target.bounds;
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'black';
+    ctx.strokeRect(wx+b.x-0.5, wy+b.y-0.5, b.width+2, b.height+3);
+    ctx.strokeStyle = 'white';
+    ctx.strokeRect(wx+b.x-1.5, wy+b.y-1.5, b.width+2, b.height+3);
+    ctx.drawImage(src, wx+b.x+Math.floor((b.width-src.width)/2),
+		  wy+b.y-src.height-2);
   }
 
   // Draw floating objects.
@@ -248,8 +265,9 @@ Level.prototype.render = function (ctx, bx, by)
     if (obj.scene !== this) continue;
     if (obj.bounds === null) {
       obj.render(ctx, bx, by);
-    } else if (obj instanceof Particle) {
-      obj.render(ctx, bx-window.x, by-window.y);
+    } else if (obj instanceof Particle ||
+	       obj instanceof HealthBar) {
+      obj.render(ctx, wx, wy);
     }
   }
 };

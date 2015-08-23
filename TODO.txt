@@ -22,9 +22,8 @@ Enemies:
  noise level / time limit
  nap time / hunger?
 
-TODO: heater, fan, surveillance camera, satellite dish, closet. cat, dog, fishbowl, plants, cusion
+TODO: heater, fan, surveillance camera, satellite dish, closet. cat, dog, fishbowl, cusion
  gamey things
- food
+ milk bottle
  health bar (baby)
- health bar (enemy)
  time limit
