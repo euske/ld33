@@ -11,5 +11,11 @@ Objectives:
 
 TODO:
  gamey things
+ game music
  microwave attack
  sound / env. sound
+ 
+  jingle:hyper
+  jingle:naptime
+  jingle:clear
+

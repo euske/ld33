@@ -262,6 +262,7 @@ Actor.prototype.die = function ()
 			      S.EXPLOSION, 0.2, 2);
   this.scene.addObject(particle);
   this.alive = false;
+  playSound(this.scene.game.audios.explosion);
 };
 
 
@@ -282,6 +283,7 @@ Milk.prototype.toString = function ()
 Milk.prototype.die = function ()
 {
   this.alive = false;
+  playSound(this.scene.game.audios.recovery);
 };
 
 // sunGlasses
@@ -316,6 +318,7 @@ function Baby(bounds, hitbox, health)
   this.motion = new Vec2(0, 0);
   this.dir = new Vec2(+1,0);
   this.invuln = 0;
+  this.kawaii = 0;
   this.hyper = 0;
   this.attacking = 0;
 }
@@ -347,6 +350,9 @@ Baby.prototype.update = function ()
   if (0 < this.invuln) {
     this.invuln--;
   }
+  if (0 < this.kawaii) {
+    this.kawaii--;
+  }
   if (0 < this.hyper) {
     this.hyper--;
   }
@@ -371,6 +377,7 @@ Baby.prototype.hit = function (attack)
 				S.SWEAT, 0.1, 2);
     this.scene.addObject(particle);
     this.invuln = Math.floor(this.scene.game.framerate/4);
+    playSound(this.scene.game.audios.hurt);
   }
 };
 
@@ -393,8 +400,10 @@ Baby.prototype.move = function (dx, dy)
 	var attack = clamp(0, this.attacking-this.minattack, this.maxattack);
 	obj.hit(attack);
 	this.scene.target = obj;
-      } else {
+      } else if (this.kawaii == 0) {
 	obj.love(1);
+	playSound(this.scene.game.audios.love);
+	this.kawaii = Math.floor(this.scene.game.framerate/4);
       }
     } else if (obj instanceof Milk) {
       this.health = clamp(0, this.health+obj.recovery, this.maxhealth);
@@ -466,6 +475,7 @@ Enemy.prototype.hit = function (attack)
     }
     this.healthbar = new HealthBar(this.bounds, 0.5, this.health/this.maxhealth);
     this.scene.addObject(this.healthbar);
+    playSound(this.scene.game.audios.attack);
   }
 };
 
@@ -475,6 +485,7 @@ Enemy.prototype.love = function (attack)
     this.hostility = Math.max(0, this.hostility-attack);
     if (this.hostility == 0) {
       this.t0 = this.scene.ticks;
+      playSound(this.scene.game.audios.tame);
     }
   }
 };

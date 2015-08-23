@@ -206,6 +206,8 @@ Level.prototype.init = function ()
   this.timelimit = 100;
   this.timeleft = 999;
   this.playable = true;
+
+  playSound(this.game.audios.baby);
 };
 
 Level.prototype.update = function ()
@@ -225,6 +227,7 @@ Level.prototype.update = function ()
       this.timeleft = clamp(0, this.timelimit-t, 999);
       if (this.timeleft <= 0) {
 	// parent!
+	playSound(this.game.audios.parent);
 	this.endLevel('PARENT BACK!', 3.5, 'LOST');
 	if (this.door !== null) {
 	  this.door.tileno = S.PARENT;
