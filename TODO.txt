@@ -12,9 +12,8 @@ Objectives:
   Weapons? shtick/talc powder/milk bottle/diapers
    power tools: hammer, drill, nailgun, thumb tack, sun glasses, bandana, ducky thing, fireworks, pillows and cusions
 
-TODO: fan, surveillance camera, satellite dish, fridge, closet, lamp, phone?. cat?, dog?, cusion?
+TODO: fan, surveillance camera, satellite dish. cat?, dog?, cusion?
  gamey things
- fix bounding box
  milk bottle
  health bar (baby)
  time limit

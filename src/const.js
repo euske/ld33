@@ -50,6 +50,8 @@ S = {
   FISHBOWL1: 32,
   FISHBOWL2: 33,
   FRIDGE: 34,
+  VASE: 35,
+  LAMP: 36,
 };
 
 T = {
@@ -79,6 +81,8 @@ T = {
   PLANT: 22,
   FISHBOWL: 23,
   FRIDGE: 24,
+  VASE: 25,
+  LAMP: 26,
   
   // isObstacle: Blocks moving and cannot be overlapped. e.g. brick.
   isObstacle: function (c) { return (c < 0 || c <= T.OBSTACLE_END); },

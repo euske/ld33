@@ -154,9 +154,9 @@ HealthBar.prototype.render = function (ctx, bx, by)
   var tw = this.scene.tilesize;
   var w = Math.floor(this.value*tw);
   ctx.lineWidth = 1;
-  ctx.strokeStyle = '#ff0000';
+  ctx.strokeStyle = '#000000';
   ctx.strokeRect(bx+this.bounds.x-0.5, by+this.bounds.y-3.5, tw+1, 3);
-  ctx.fillStyle = '#00ff00';
+  ctx.fillStyle = (this.value <= 0.3)? '#ff0000' : '#00ff00';
   ctx.fillRect(bx+this.bounds.x, by+this.bounds.y-4+1, w, 2);
 };
 
@@ -221,9 +221,9 @@ Actor.prototype.hit = function (attack)
 
 
 // Baby
-function Baby(bounds, health)
+function Baby(bounds, hitbox, health)
 {
-  Actor.call(this, bounds, bounds.inflate(-4,-4), S.BABY, health);
+  Actor.call(this, bounds, hitbox, S.BABY, health);
   this.minattack = 2;
   this.maxattack = 5;
   this.speed_normal = 2;
@@ -329,11 +329,12 @@ Baby.prototype.action = function (action)
 };
 
 // Enemy
-function Enemy(bounds, tileno, health, attack, hostility)
+function Enemy(bounds, hitbox, tileno, health, attack, hostility)
 {
-  Actor.call(this, bounds, bounds.inflate(-4,-4), tileno, health);
+  Actor.call(this, bounds, hitbox, tileno, health);
   this.attack = (attack !== null)? attack : 0;
   this.hostility = (hostility !== null)? hostility : -1;
+  this.healthbar = null;
   this.t0 = 0;
 }
 
@@ -371,9 +372,12 @@ Enemy.prototype.hit = function (attack)
   Actor.prototype.hit.call(this, attack);
   if (0 < this.health) {
     var fps = this.scene.game.framerate;
-    var particle = new HealthBar(this.bounds, Math.floor(fps/2),
-				 this.health/this.maxhealth);
-    this.scene.addObject(particle);
+    if (this.healthbar !== null) {
+      this.healthbar.alive = false;
+    }
+    this.healthbar = new HealthBar(this.bounds, Math.floor(fps/2),
+				   this.health/this.maxhealth);
+    this.scene.addObject(this.healthbar);
   }
 };
 
@@ -391,14 +395,15 @@ Enemy.prototype.update = function ()
 {
   var fps = this.scene.game.framerate;
   if (this.hostility == 0 && ((this.scene.ticks-this.t0) % fps) == 0) {
-    var particle = new Particle(this.bounds, fps, new Vec2(0,-1), S.HEART, Math.floor(fps/3), 2);
+    var particle = new Particle(this.bounds, fps, new Vec2(0,-1),
+				S.HEART, Math.floor(fps/3), 2);
     this.scene.addObject(particle);
   }
 };
 
-function EnemyStill(bounds, tileno, health, attack, hostility, maxphase)
+function EnemyStill(bounds, hitbox, tileno, health, attack, hostility, maxphase)
 {
-  Enemy.call(this, bounds, tileno, health, attack, hostility);
+  Enemy.call(this, bounds, hitbox, tileno, health, attack, hostility);
   this.basetile = tileno;
   this.maxphase = (maxphase !== undefined)? maxphase : 1;
   this.phase = 0;
@@ -413,9 +418,9 @@ EnemyStill.prototype.update = function ()
   this.tileno = this.basetile+this.phase;
 };
 
-function EnemyCleaner(bounds, health, attack, hostility)
+function EnemyCleaner(bounds, hitbox, health, attack, hostility)
 {
-  Enemy.call(this, bounds, S.CLEANER, health, attack, hostility);
+  Enemy.call(this, bounds, hitbox, S.CLEANER, health, attack, hostility);
   this.speed = 2;
   this.step = 0;
   this.dir = new Vec2(+1,0);
@@ -452,9 +457,9 @@ EnemyCleaner.prototype.update = function ()
   this.tileno = S.CLEANER + Math.floor(this.step/4)%2*2 + ((0 < this.dir.x)? 0 : +1);
 };
 
-function EnemyWasher(bounds, health, attack, hostility)
+function EnemyWasher(bounds, hitbox, health, attack, hostility)
 {
-  EnemyStill.call(this, bounds, S.WASHER, health, attack, hostility, 2);
+  EnemyStill.call(this, bounds, hitbox, S.WASHER, health, attack, hostility, 2);
 }
 
 EnemyWasher.prototype = Object.create(EnemyStill.prototype);

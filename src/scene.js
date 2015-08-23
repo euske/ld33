@@ -1,6 +1,11 @@
 // scene.js
 // Scene object takes care of every in-game object and the scrollable map.
 
+function grow(rect, dw, dh)
+{
+  return new Rectangle(rect.x-dw, rect.y-dh, rect.width+dw*2, rect.height+dh);
+}
+
 function Scene(game)
 {
   this.game = game;
@@ -120,50 +125,56 @@ Level.prototype.init = function ()
       // EnemyStill(rect, tileno, health[, attack, hostility, maxphase])
       switch (c) {
       case T.BABY:
-	obj = new Baby(rect, 1000);
+	obj = new Baby(rect, grow(rect,-2,-2), 1000);
 	scene.player = obj;
 	break;
       case T.REALDOOR:
-	obj = new EnemyStill(rect, S.DOOR, 1000);
+	obj = new EnemyStill(grow(rect,0,16), grow(rect,0,16), S.DOOR, 1000);
 	break;
       case T.TV:
-	obj = new EnemyStill(rect, S.TV, 10, 0, -1, 2);
+	obj = new EnemyStill(rect, grow(rect,-1,-2), S.TV, 10, 0, -1, 2);
 	break;
       case T.SOFA_R:
-	obj = new EnemyStill(rect, S.SOFA_R, 30);
+	obj = new EnemyStill(grow(rect,0,12), grow(rect,-1,5), S.SOFA_R, 30);
 	break;
       case T.SOFA_L:
-	obj = new EnemyStill(rect, S.SOFA_L, 30);
+	obj = new EnemyStill(grow(rect,0,12), grow(rect,-1,5), S.SOFA_L, 30);
 	break;
       case T.TABLE:
-	obj = new EnemyStill(rect, S.TABLE, 20);
+	obj = new EnemyStill(grow(rect,0,5), grow(rect,-1,0), S.TABLE, 20);
 	break;
       case T.CLEANER:
-	obj = new EnemyCleaner(rect, 20, 2, 10);
+	obj = new EnemyCleaner(rect, rect, 20, 2, 10);
 	break;
       case T.MICROWAVE:
-	obj = new EnemyStill(rect, S.MICROWAVE, 30, 1, 20, 2);
+	obj = new EnemyStill(grow(rect,0,16), grow(rect,0,12), S.MICROWAVE, 30, 1, 20, 2);
 	break;
       case T.WASHER:
-	obj = new EnemyWasher(rect, 30, 5, 20);
+	obj = new EnemyWasher(grow(rect,0,8), grow(rect,0,8), 30, 5, 20);
 	break;
       case T.CLOCK:
-	obj = new EnemyStill(rect, S.CLOCK, 20, 1, 10, 2);
+	obj = new EnemyStill(grow(rect,0,16), grow(rect,-2,16), S.CLOCK, 20, 1, 10, 2);
 	break;
       case T.PHONE:
-	obj = new EnemyStill(rect, S.PHONE, 10, 0, 5, 2);
+	obj = new EnemyStill(grow(rect,0,8), grow(rect,-1,0), S.PHONE, 10, 0, 5, 2);
 	break;
       case T.COOKER:
-	obj = new EnemyStill(rect, S.COOKER, 20, 2, 1, 2);
+	obj = new EnemyStill(grow(rect,0,8), grow(rect,-1,0), S.COOKER, 20, 2, 1, 2);
 	break;
       case T.PLANT:
-	obj = new EnemyStill(rect, S.PLANT, 10);
+	obj = new EnemyStill(rect, grow(rect,-1,-2), S.PLANT, 10);
 	break;
       case T.FISHBOWL:
-	obj = new EnemyStill(rect, S.FISHBOWL, 5, 0, -1, 2);
+	obj = new EnemyStill(rect, grow(rect,-1,-2), S.FISHBOWL, 5, 0, -1, 2);
 	break;
       case T.FRIDGE:
-	obj = new EnemyStill(rect, S.FRIDGE, 20);
+	obj = new EnemyStill(grow(rect,0,8), grow(rect,0,8), S.FRIDGE, 20);
+	break;
+      case T.VASE:
+	obj = new EnemyStill(grow(rect,0,12), grow(rect,-2,-4), S.VASE, 8);
+	break;
+      case T.LAMP:
+	obj = new EnemyStill(grow(rect,0,16), grow(rect,-4,0), S.LAMP, 8);
 	break;
       }
       scene.addObject(obj);
@@ -231,24 +242,24 @@ Level.prototype.render = function (ctx, bx, by)
     bx+fx, by+fy, x0, y0, x1-x0+1, y1-y0+1);
 
   // Set the drawing order.
-  var map = [];
+  var order = [];
   for (var i = 0; i < this.sprites.length; i++) {
     var obj = this.sprites[i];
-    if (obj.scene !== this) continue;
-    if (obj.bounds === null) continue;
     if (obj instanceof Particle) continue;
     if (obj instanceof HealthBar) continue;
+    if (obj.scene !== this) continue;
+    if (obj.bounds === null) continue;
     var bounds = obj.bounds;
     if (bounds.overlap(window)) {
-      var y = Math.floor((bounds.y+bounds.height/2)/tilesize);
-      map.push({y:y, obj:obj});
+      var y = bounds.y+bounds.height;
+      order.push({y:y, obj:obj});
     }
   }
 
   // Draw the objects.
-  map.sort(function (a,b) { return a.y-b.y; });
-  for (var i = 0; i < map.length; i++) {
-    var obj = map[i].obj;
+  order.sort(function (a,b) { return a.y-b.y; });
+  for (var i = 0; i < order.length; i++) {
+    var obj = order[i].obj;
     obj.render(ctx, wx, wy);
   }
 
