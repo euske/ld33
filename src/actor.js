@@ -136,6 +136,7 @@ function Actor(bounds, hitbox, tileno, health)
   this.hitbox = (hitbox === null)? hitbox : hitbox.copy();
   this.tileno = tileno;
   this.health = health;
+  this.shadow = true;
 }
 
 Actor.prototype = Object.create(Sprite.prototype);
@@ -154,6 +155,11 @@ Actor.prototype.render = function (ctx, bx, by)
     var th = sprites.height;
     var w = this.bounds.width;
     var h = this.bounds.height;
+    if (this.shadow) {
+      ctx.drawImage(sprites,
+		    S.SHADOW*tw, 0, w, th,
+		    bx+this.bounds.x, by+this.bounds.y+2+h-th, w, th);
+    }
     ctx.drawImage(sprites,
 		  this.tileno*tw, 0, w, th,
 		  bx+this.bounds.x, by+this.bounds.y+h-th, w, th);

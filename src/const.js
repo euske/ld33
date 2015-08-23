@@ -44,6 +44,7 @@ S = {
   EXPLOSION: 28,
   EXPLOSION1: 28,
   EXPLOSION2: 29,
+  SHADOW: 30,
 };
 
 T = {
