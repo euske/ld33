@@ -244,6 +244,7 @@ Actor.prototype.move = function (dx, dy)
   // [OVERRIDE]
   this.bounds = this.bounds.move(dx, dy);
   this.hitbox = this.hitbox.move(dx, dy);
+  return true;
 };
 
 Actor.prototype.hit = function (attack)
@@ -453,6 +454,7 @@ Enemy.prototype.move = function (dx, dy)
     }
   }
   Actor.prototype.move.call(this, v.x, v.y);
+  return (1 <= Math.abs(v.x) || 1 <= Math.abs(v.y));
 };
 
 Enemy.prototype.hit = function (attack)
@@ -582,4 +584,25 @@ EnemyFridge.prototype.die = function ()
   EnemyStill.prototype.die.call(this);
   var item = new Milk(this.bounds, this.hitbox);
   this.scene.addObject(item);
+};
+
+function EnemyFan(bounds, hitbox, health, attack, hostility)
+{
+  Enemy.call(this, bounds, hitbox, S.FAN, health, attack, hostility);
+  this.speed = 1;
+  this.step = 0;
+  this.dir = new Vec2(+1,0);
+}
+
+EnemyFan.prototype = Object.create(Enemy.prototype);
+
+EnemyFan.prototype.update = function ()
+{
+  Enemy.prototype.update.call(this);
+  var v = this.dir.modify(this.speed);
+  if (!this.move(v.x, v.y)) {
+    this.dir.x = -this.dir.x;
+  }
+  this.step++;
+  this.tileno = S.FAN + (this.step%2)*2 + ((0 < this.dir.x)? 0 : +1);
 };

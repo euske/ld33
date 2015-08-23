@@ -63,6 +63,12 @@ S = {
   GABY_U2: 44,
   GABY_D1: 45, 
   GABY_D2: 46,
+  FAN: 47,
+  FAN_R1: 47,
+  FAN_R2: 48,
+  DISH: 49,
+  DISH1: 49,
+  DISH2: 50,
 };
 
 T = {
@@ -97,6 +103,8 @@ T = {
   TABLE2: 27,
   MILK: 28,
   GLASSES: 29,
+  FAN: 30,
+  DISH: 31,
   
   // isObstacle: Blocks moving and cannot be overlapped. e.g. brick.
   isObstacle: function (c) { return (c < 0 || c <= T.OBSTACLE_END); },

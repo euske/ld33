@@ -189,6 +189,12 @@ Level.prototype.init = function ()
       case T.GLASSES:
 	obj = new Glasses(rect, grow(rect,0,-8));
 	break;
+      case T.FAN:
+	obj = new EnemyFan(grow(rect,0,16), grow(rect,0,8), 20, 1, 20);
+	break;
+      case T.DISH:
+	obj = new EnemyStill(rect, rect, S.DISH, 20, 1, 20, 2);
+	break;
       }
       scene.addObject(obj);
       tilemap.set(x, y, T.CARPET);

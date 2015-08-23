@@ -9,7 +9,7 @@ Objectives:
  Try to destroy as much as possible.
  kinda reverse-clicking game. you can get a automated weapon/tool as you go
 
-TODO: fan, surveillance camera, satellite dish. cat?, dog?, cusion?
+TODO:
  gamey things
  microwave attack
  sound / env. sound
