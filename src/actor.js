@@ -194,6 +194,8 @@ HealthBar.prototype.render = function (ctx, bx, by)
   ctx.lineWidth = 1;
   ctx.strokeStyle = '#000000';
   ctx.strokeRect(bx+this.bounds.x-0.5, by+this.bounds.y-3.5, tw+1, 3);
+  ctx.fillStyle = 'rgba(0,0,0,0.5)'
+  ctx.fillRect(bx+this.bounds.x-0.5, by+this.bounds.y-3.5, tw+1, 3);  
   ctx.fillStyle = (this.value <= 0.3)? '#ff0000' : '#00ff00';
   ctx.fillRect(bx+this.bounds.x, by+this.bounds.y-4+1, w, 2);
 };
@@ -311,7 +313,7 @@ function Baby(bounds, hitbox, health)
   this.minattack = 2;
   this.maxattack = 5;
   this.speed_normal = 2;
-  this.speed_attack = 4;
+  this.speed_attack = 5;
   this.step = 0;
   this.motion = new Vec2(0, 0);
   this.dir = new Vec2(+1,0);
@@ -376,9 +378,9 @@ Baby.prototype.move = function (dx, dy)
 {
   var speed = this.speed_normal;
   if (0 < this.attacking) {
-    speed = this.speed_attack;
+    speed = clamp(0, speed+this.attacking, this.speed_attack);
   } else if (this.attacking < 0) {
-    speed = -this.speed_attack;
+    speed = -this.speed_normal;
   }
   var v = new Vec2(dx*speed, dy*speed);
   var objs = this.scene.findOverlappingObjects(this, v);
@@ -463,11 +465,11 @@ Enemy.prototype.move = function (dx, dy)
 Enemy.prototype.hit = function (attack)
 {
   Actor.prototype.hit.call(this, attack);
+  if (this.healthbar !== null) {
+    this.healthbar.alive = false;
+  }
   if (0 < this.health) {
-    if (this.healthbar !== null) {
-      this.healthbar.alive = false;
-    }
-    this.healthbar = new HealthBar(this.bounds, 0.5, this.health/this.maxhealth);
+    this.healthbar = new HealthBar(this.bounds.move(0,-2), 0.5, this.health/this.maxhealth);
     this.scene.addObject(this.healthbar);
     playSound(this.scene.game.audios.hit);
   }
@@ -628,6 +630,7 @@ function EnemyHazard(bounds, hitbox, tileno, health)
   this.attacking = new Counter();
   this.attackSound = null;
   this.attackImage = null;
+  this.rate = 1.0;
 }
 
 EnemyHazard.prototype = Object.create(EnemyStill.prototype);
@@ -636,9 +639,13 @@ EnemyHazard.prototype.update = function ()
 {
   EnemyStill.prototype.update.call(this);
   this.attacking.update();
-  if (rnd(this.scene.game.framerate*2) == 0 &&
-      this.attacking.trigger(Math.floor(this.scene.game.framerate/4))) {
-    var range = this.bounds.inflate(this.bounds.width*3, this.bounds.height*3);
+  var fps = this.scene.game.framerate;
+  if (rnd(Math.floor(fps/this.rate)) == 0 &&
+      this.attacking.trigger(Math.floor(fps/this.rate/4))) {
+    var range = new Rectangle(this.bounds.centerx()-this.scene.tilesize*2,
+			      this.bounds.centery()-this.scene.tilesize*2,
+			      this.scene.tilesize*4,
+			      this.scene.tilesize*4);
     var objs = this.scene.findObjects(range);
     for (var i = 0; i < objs.length; i++) {
       var obj = objs[i];
@@ -646,8 +653,10 @@ EnemyHazard.prototype.update = function ()
 	obj.hit(this.attack);
       }
     }
-    if (this.attackSound !== null) {
-      playSound(this.attackSound);
+    if (this.bounds.overlap(this.scene.window)) {
+      if (this.attackSound !== null) {
+	playSound(this.attackSound);
+      }
     }
   }
 };

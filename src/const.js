@@ -81,6 +81,7 @@ T = {
 
   FLOOR: 5,
   CARPET: 6,
+  DOOR: 7,
 
   ACTOR: 10,
   BABY: 10,

@@ -11,9 +11,11 @@ Objectives:
 
 TODO:
  gamey things
- game music
  
-  jingle:hyper
-  jingle:naptime
-  jingle:clear
+  jingle:hyper.mp3
+  jingle:naptime.mp3
+  jingle:clear.mp3
 
+ music.mp3
+ ending.mp3
+ 

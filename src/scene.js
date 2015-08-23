@@ -133,58 +133,58 @@ Level.prototype.init = function (level)
 	scene.player = obj;
 	break;
       case T.REALDOOR:
-	obj = new Enemy(grow(rect,0,16), grow(rect,0,16), S.DOOR, 1000);
+	obj = new Enemy(grow(rect,0,16), grow(rect,0,16), S.DOOR, 500);
 	scene.door = obj;
 	break;
       case T.TV:
-	obj = new EnemyStill(rect, grow(rect,-1,-2), S.TV, 10);
+	obj = new EnemyStill(rect, grow(rect,-1,-2), S.TV, 20);
 	obj.maxphase = 2;
 	break;
       case T.SOFA_R:
-	obj = new EnemyStill(grow(rect,0,12), grow(rect,-1,5), S.SOFA_R, 30);
+	obj = new EnemyStill(grow(rect,0,12), grow(rect,-1,4), S.SOFA_R, 40);
 	break;
       case T.SOFA_L:
-	obj = new EnemyStill(grow(rect,0,12), grow(rect,-1,5), S.SOFA_L, 30);
+	obj = new EnemyStill(grow(rect,0,12), grow(rect,-1,4), S.SOFA_L, 40);
 	break;
       case T.TABLE1:
 	obj = new EnemyStill(grow(rect,0,5), grow(rect,-1,0), S.TABLE1, 20);
 	break;
       case T.TABLE2:
-	obj = new EnemyStill(grow(rect,0,4), grow(rect,0,1), S.TABLE2, 20);
+	obj = new EnemyStill(grow(rect,0,4), rect, S.TABLE2, 20);
 	break;
       case T.CLEANER:
 	obj = new EnemyCleaner(rect, rect, 20);
 	obj.attack = 2;
-	obj.hostility = 10;
+	obj.hostility = 5;
 	obj.sound = game.audios.cleaner;
 	break;
       case T.MICROWAVE:
-	obj = new EnemyHazard(grow(rect,0,16), grow(rect,0,12), S.MICROWAVE, 30);
-	obj.attack = 1;
-	obj.hostility = 20;
+	obj = new EnemyHazard(grow(rect,0,16), grow(rect,0,8), S.MICROWAVE, 50);
+	obj.attack = 5;
+	obj.hostility = 10;
 	obj.maxphase = 2;
 	obj.attackSound = game.audios.eshock;
 	obj.attackImage = game.images.eshock;
 	break;
       case T.WASHER:
-	obj = new EnemyWasher(grow(rect,0,8), grow(rect,0,8), 30);
+	obj = new EnemyWasher(grow(rect,0,8), rect, 80);
 	obj.attack = 3;
-	obj.hostility = 20;
+	obj.hostility = 5;
 	obj.sound = game.audios.washer;
 	break;
       case T.CLOCK:
-	obj = new EnemyStill(grow(rect,0,16), grow(rect,-2,16), S.CLOCK, 20);
+	obj = new EnemyStill(grow(rect,0,16), grow(rect,-2,12), S.CLOCK, 40);
 	obj.maxphase = 2;
 	//obj.sound = game.audios.clock; TODO
 	break;
       case T.PHONE:
-	obj = new EnemyStill(grow(rect,0,8), grow(rect,-1,0), S.PHONE, 10);
+	obj = new EnemyStill(grow(rect,0,8), grow(rect,-1,0), S.PHONE, 20);
 	obj.hostility = 5;
 	obj.maxphase = 2;
 	//obj.sound = game.audios.phone; TODO
 	break;
       case T.COOKER:
-	obj = new EnemyHazard(grow(rect,0,8), grow(rect,-1,0), S.COOKER, 20);
+	obj = new EnemyHazard(grow(rect,0,8), grow(rect,-1,0), S.COOKER, 25);
 	obj.hostility = 2;
 	obj.attack = 1;
 	obj.maxphase = 2;
@@ -192,20 +192,20 @@ Level.prototype.init = function (level)
 	obj.attackImage = game.images.steam;
 	break;
       case T.PLANT:
-	obj = new EnemyStill(rect, grow(rect,-1,-2), S.PLANT, 10);
+	obj = new EnemyStill(rect, grow(rect,-1,-2), S.PLANT, 15);
 	break;
       case T.FISHBOWL:
 	obj = new EnemyStill(rect, grow(rect,-1,-2), S.FISHBOWL, 5);
 	obj.maxphase = 2;
 	break;
       case T.FRIDGE:
-	obj = new EnemyFridge(grow(rect,0,8), grow(rect,0,8), 20);
+	obj = new EnemyFridge(grow(rect,0,8), grow(rect,0,4), 100);
 	break;
       case T.VASE:
-	obj = new EnemyStill(grow(rect,0,12), grow(rect,-2,-4), S.VASE, 8);
+	obj = new EnemyStill(grow(rect,0,12), grow(rect,-2,-4), S.VASE, 10);
 	break;
       case T.LAMP:
-	obj = new EnemyStill(grow(rect,0,16), grow(rect,-4,0), S.LAMP, 8);
+	obj = new EnemyStill(grow(rect,0,16), grow(rect,-4,0), S.LAMP, 20);
 	break;
       case T.MILK:
 	obj = new Milk(grow(rect,0,8), grow(rect,-2,0));
@@ -214,8 +214,8 @@ Level.prototype.init = function (level)
 	obj = new Glasses(rect, grow(rect,0,-8));
 	break;
       case T.FAN:
-	obj = new EnemyFan(grow(rect,0,16), grow(rect,0,8), 20);
-	obj.hostility = 20;
+	obj = new EnemyFan(grow(rect,0,16), rect, 70);
+	obj.hostility = 10;
 	obj.attack = 1;
 	//obj.sound = game.audios.fan; TODO
 	break;
@@ -240,6 +240,7 @@ Level.prototype.init = function (level)
 
   this.playable = true;
   this.target = null;
+  this.showtarget = leveldata.showtarget;
   playSound(this.game.audios.baby);
 };
 
@@ -287,11 +288,17 @@ Level.prototype.update = function ()
   this.ticks++;
 
   var objs = this.findObjects(rect);
-  var enemies = 0;
   for (var i = 0; i < objs.length; i++) {
     var obj = objs[i];
     if (obj instanceof Enemy) {
       obj.makeNoise(this.game.framerate*3);
+    }
+  }
+  
+  var enemies = 0;
+  for (var i = 0; i < this.colliders.length; i++) {
+    var obj = this.colliders[i];
+    if (obj instanceof Enemy && obj.alive && obj.scene === this) {
       enemies++;
     }
   }
@@ -311,11 +318,13 @@ Level.prototype.update = function ()
     }
     if (this.player.health <= 0) {
       // nap time!
-      this.finish('NAP TIME!', 2.0, 'LOST');
+      this.finish('NAP TIME!', 3.0, 'LOST');
+      //playSound(this.game.audios.naptime); TODO
     }
     if (enemies == 0) {
       // destroyed all enemies!
-      this.finish('CLEAR! <3', 2.0, 'WON')
+      this.finish('CLEAR! <3', 3.0, 'WON')
+      //playSound(this.game.audios.clear); TODO
     }
   }
 };
@@ -366,16 +375,18 @@ Level.prototype.render = function (ctx, bx, by)
   }
 
   // Draw the target aim.
-  if (this.target !== null && this.target.alive) {
-    var src = this.game.images.target;
-    var b = this.target.bounds;
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = 'black';
-    ctx.strokeRect(wx+b.x-0.5, wy+b.y-0.5, b.width+2, b.height+3);
-    ctx.strokeStyle = 'white';
-    ctx.strokeRect(wx+b.x-1.5, wy+b.y-1.5, b.width+2, b.height+3);
-    ctx.drawImage(src, wx+b.x+Math.floor((b.width-src.width)/2),
-		  wy+b.y-src.height-2);
+  if (this.showtarget) {
+    if (this.target !== null && this.target.alive) {
+      var src = this.game.images.target;
+      var b = grow(this.target.bounds, 0, 4);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = 'black';
+      ctx.strokeRect(wx+b.x-0.5, wy+b.y-0.5, b.width+2, b.height+3);
+      ctx.strokeStyle = 'white';
+      ctx.strokeRect(wx+b.x-1.5, wy+b.y-1.5, b.width+2, b.height+3);
+      ctx.drawImage(src, wx+b.x+Math.floor((b.width-src.width)/2),
+		    wy+b.y-src.height-2);
+    }
   }
 
   // Draw floating objects.
@@ -396,6 +407,8 @@ Level.prototype.render = function (ctx, bx, by)
   ctx.lineWidth = 1;
   ctx.strokeStyle = '#000000';
   ctx.strokeRect(bx+3.5, by+this.window.height-barsize.y-3.5, barsize.x+1, barsize.y+1);
+  ctx.fillStyle = 'rgba(0,0,0,0.5)'
+  ctx.fillRect(bx+3.5, by+this.window.height-barsize.y-3.5, barsize.x+1, barsize.y+1);
   ctx.fillStyle = (value <= 0.3)? '#ff0000' : '#00ff00';
   ctx.fillRect(bx+4, by+this.window.height-barsize.y-3, Math.floor(barsize.x*value), barsize.y);
   if (0 < this.timelimit) {
