@@ -220,8 +220,8 @@ Level.prototype.init = function (level)
 	//obj.sound = game.audios.fan; TODO
 	break;
       case T.DISH:
-	obj = new EnemyStill(rect, rect, S.DISH, 20);
-	obj.hostility = 20;
+	obj = new EnemyDish(rect, rect, S.DISH, 20);
+	obj.hostility = 10;
 	obj.maxphase = 2;
 	obj.sound = game.audios.satellite;
 	break;

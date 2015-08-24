@@ -201,6 +201,51 @@ HealthBar.prototype.render = function (ctx, bx, by)
 };
 
 
+// Missile
+function Missile(target)
+{
+  Sprite.call(this, null);
+  this.target = target;
+  this.speed = 4;
+  this.phase = 0;
+}
+
+Missile.prototype = Object.create(Sprite.prototype);
+
+Missile.prototype.update = function ()
+{
+  if (this.bounds === null) {
+    var tw = this.scene.tilesize;
+    var sprites = this.scene.game.sprites;
+    this.bounds = new Rectangle(
+      this.target.bounds.x+(this.target.bounds.width-tw*2)/2,
+      this.scene.window.bottom(),
+      tw*2, sprites.height*2);
+    playSound(this.scene.game.audios.missile);
+  }
+  if (this.bounds.overlap(this.target.hitbox)) {
+    this.alive = false;
+    this.target.die();
+  }
+  this.bounds.y -= this.speed;
+  this.phase = (this.phase+1) % 2;
+}
+
+Missile.prototype.render = function (ctx, bx, by)
+{
+  if (this.bounds !== null) {
+  var tw = this.scene.tilesize;
+  var sprites = this.scene.game.sprites;
+  var th = sprites.height;
+  var tileno = S.MISSILE+this.phase;
+  ctx.drawImage(sprites,
+		tileno*tw, 0, tw, th,
+		bx+this.bounds.x, by+this.bounds.y+this.bounds.height-th*2,
+		tw*2, th*2);
+  }
+};
+
+
 // Actor: a character that can interact with other characters.
 function Actor(bounds, hitbox, tileno, health)
 {
@@ -675,5 +720,30 @@ EnemyHazard.prototype.render = function (ctx, bx, by)
     ctx.drawImage(this.attackImage, 
 		  bx+this.bounds.x+(this.bounds.width-this.attackImage.width)/2,
 		  by+this.bounds.y+(this.bounds.height-this.attackImage.height)/2);
+  }
+};
+
+function EnemyDish(bounds, hitbox, tileno, health)
+{
+  EnemyStill.call(this, bounds, hitbox, tileno, health);
+  this.missile = null;
+}
+
+EnemyDish.prototype = Object.create(EnemyStill.prototype);
+
+EnemyDish.prototype.update = function ()
+{
+  EnemyStill.prototype.update.call(this);
+  if (this.missile !== null && !this.missile.alive) {
+    this.missile = null;
+  }
+  if (this.hostility == 0) {
+    if (this.missile === null && rnd(this.scene.game.framerate) == 0) {
+      var target = this.scene.target;
+      if (target !== null && target.alive) {
+	this.missile = new Missile(target);
+	this.scene.addObject(this.missile);
+      }
+    }
   }
 };

@@ -315,14 +315,15 @@ Game.prototype.init = function (state)
   case 2:
   case 3:
   case 4:
+  case 5:
     this.scene = new Level(this);
     this.scene.init(state);
     this.scene.changed.subscribe(level_changed);
-    this.music = this.scene.music;
+    this.music = this.audios.music;
     break;
-  case 5:
+  case 6:
     this.scene = new Title(this);
-    this.scene.init('<b>You Won!</b><p>Press Enter to restart.');
+    this.scene.init('<div align=center class=g>You truly become the Monster!</div><p>Go for the world domination.');
     this.scene.changed.subscribe(title_changed);
     //this.music = this.audios.ending; TODO
     break;

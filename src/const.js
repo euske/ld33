@@ -69,6 +69,9 @@ S = {
   DISH: 49,
   DISH1: 49,
   DISH2: 50,
+  MISSILE: 51,
+  MISSILE1: 51,
+  MISSILE2: 52,
 };
 
 T = {
