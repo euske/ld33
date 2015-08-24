@@ -9,7 +9,7 @@ function grow(rect, dw, dh)
 function Scene(game)
 {
   this.game = game;
-  this.music = null;
+  this.music = game.audios.music;
   this.changed = new Slot(this);
 }
 
@@ -84,6 +84,48 @@ Title.prototype.action = function (action)
   if (action) {
     this.changed.signal();
   }
+};
+
+
+//  Title2
+//
+function Title2(game)
+{
+  Scene.call(this, game);
+}
+
+Title2.prototype = Object.create(Scene.prototype);
+
+Title2.prototype.init = function (text)
+{
+  var frame = this.game.frame;
+  var e = this.game.addElement(
+    new Rectangle(frame.width*2/4, frame.height*2.5/4,
+		  frame.width/4, frame.height/4));
+  e.align = 'left';
+  e.style.padding = '10px';
+  e.style.color = 'white';
+  e.innerHTML = text;
+};
+
+Title2.prototype.action = function (action)
+{
+  if (action) {
+    this.changed.signal();
+  }
+};
+
+Title2.prototype.render = function (ctx, bx, by)
+{
+  ctx.fillStyle = 'rgb(0,0,0)';
+  ctx.fillRect(bx, by, this.game.screen.width, this.game.screen.height);
+  this.game.renderString(this.game.images.font_w, 'I AM THE', 2,
+			 bx+this.game.screen.width/2, by+10, 'center');
+  this.game.renderString(this.game.images.font_w, 'BABY <3', 2,
+			 bx+this.game.screen.width/2, by+30, 'center');
+  ctx.drawImage(this.game.images.sprites,
+		1, 16, 13, 13,
+		0, this.game.screen.height-52, 52, 52);
 };
 
 
@@ -215,7 +257,7 @@ Level.prototype.init = function (level)
 	break;
       case T.FAN:
 	obj = new EnemyFan(grow(rect,0,16), rect, 70);
-	obj.hostility = 10;
+	obj.hostility = 5;
 	obj.attack = 1;
 	//obj.sound = game.audios.fan; TODO
 	break;
@@ -254,6 +296,7 @@ Level.prototype.finish = function (text, duration, state)
   });
   this.addObject(banner);
   this.playable = false;
+  this.music.pause();
 };
 
 Level.prototype.setCenter = function (rect)
@@ -319,11 +362,12 @@ Level.prototype.update = function ()
     if (this.player.health <= 0) {
       // nap time!
       this.finish('NAP TIME!', 3.0, 'LOST');
-      //playSound(this.game.audios.naptime); TODO
+      playSound(this.game.audios.naptime);
     }
     if (enemies == 0) {
       // destroyed all enemies!
       this.finish('CLEAR! <3', 3.0, 'WON')
+      playSound(this.game.audios.baby);
       //playSound(this.game.audios.clear); TODO
     }
   }

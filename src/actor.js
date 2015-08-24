@@ -224,11 +224,14 @@ Missile.prototype.update = function ()
     playSound(this.scene.game.audios.missile);
   }
   if (this.bounds.overlap(this.target.hitbox)) {
-    this.alive = false;
     this.target.die();
   }
-  this.bounds.y -= this.speed;
-  this.phase = (this.phase+1) % 2;
+  if (!this.target.alive) {
+    this.alive = false;
+  } else {
+    this.bounds.y -= this.speed;
+    this.phase = (this.phase+1) % 2;
+  }
 }
 
 Missile.prototype.render = function (ctx, bx, by)
@@ -583,22 +586,20 @@ EnemyCleaner.prototype = Object.create(Enemy.prototype);
 EnemyCleaner.prototype.update = function ()
 {
   Enemy.prototype.update.call(this);
-  if (rnd(this.scene.game.framerate) == 0) {
-    if (this.hostility == 0) {
-      var target = this.scene.target;
-      if (target === null || target === this || !target.alive) {
-	target = this.scene.player;
-      }
-      if (rnd(2) == 0) {
-	this.dir.x = (target.hitbox.x < this.hitbox.x)? -1 : +1;
-	this.dir.y = 0;
-      } else {
-	this.dir.x = 0;
-	this.dir.y = (target.hitbox.y < this.hitbox.y)? -1 : +1;
-      }
-    } else {
-      this.dir = this.dir.rotate(rnd(3)-1);
+  if (this.hostility == 0 && rnd(3) == 0) {
+    var target = this.scene.target;
+    if (target === null || target === this || !target.alive) {
+      target = this.scene.player;
     }
+    if (rnd(2) == 0) {
+      this.dir.x = (target.hitbox.x < this.hitbox.x)? -1 : +1;
+      this.dir.y = 0;
+    } else {
+      this.dir.x = 0;
+      this.dir.y = (target.hitbox.y < this.hitbox.y)? -1 : +1;
+    }
+  } else if (rnd(this.scene.game.framerate) == 0) {
+    this.dir = this.dir.rotate(rnd(3)-1);
   }
   if (this.dir.x != 0 || this.dir.y != 0) {
     var v = this.dir.modify(this.speed);

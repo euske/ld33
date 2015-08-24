@@ -146,7 +146,7 @@ Game.prototype.keydown = function (ev)
     this._key_down = true;
     this._vy = +1;
     break;
-  case 17:			// CONTROL
+  //case 17:			// CONTROL
   case 32:			// SPACE
   case 90:			// Z
     if (!this._key_attack) {
@@ -157,7 +157,7 @@ Game.prototype.keydown = function (ev)
     }
     break;
   case 13:			// ENTER
-  case 16:			// SHIFT
+  //case 16:			// SHIFT
   case 88:			// X
     if (!this._key_defend) {
       this._key_defend = true;
@@ -169,11 +169,7 @@ Game.prototype.keydown = function (ev)
   case 112:			// F1
     break;
   case 27:			// ESC
-    if (this.active) {
-      this.blur();
-    } else {
-      this.focus();
-    }
+    this.scene.changed.signal('LOST');
     break;
   }
 };
@@ -206,7 +202,7 @@ Game.prototype.keyup = function (ev)
     this._key_down = false;
     this._vy = (this._key_up) ? -1 : 0;
     break;
-  case 17:			// CONTROL
+  //case 17:			// CONTROL
   case 32:			// SPACE
   case 90:			// Z
     if (this._key_attack) {
@@ -217,7 +213,7 @@ Game.prototype.keyup = function (ev)
     }
     break;
   case 13:			// ENTER
-  case 16:			// SHIFT
+  //case 16:			// SHIFT
   case 88:			// X
     if (this._key_defend) {
       this._key_defend = false;
@@ -307,8 +303,8 @@ Game.prototype.init = function (state)
   this.music = null;
   switch (state) {
   case 0:
-    this.scene = new Title(this);
-    this.scene.init('<b>I AM THE BABY &lt;3</b><p>Press Enter to start.');
+    this.scene = new Title2(this);
+    this.scene.init('A New Tale of<br>World Domination.');
     this.scene.changed.subscribe(title_changed);
     break;
   case 1:
@@ -319,7 +315,7 @@ Game.prototype.init = function (state)
     this.scene = new Level(this);
     this.scene.init(state);
     this.scene.changed.subscribe(level_changed);
-    this.music = this.audios.music;
+    this.music = this.scene.music;
     break;
   case 6:
     this.scene = new Title(this);
